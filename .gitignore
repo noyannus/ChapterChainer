@@ -1,5 +1,8 @@
-# exclude everything except directory foo/bar
-/*               
-!/foo               
-/foo/*               
-!/foo/bar
+# Exclude Everything Except...
+/*
+
+# Script, Licencse, ReadMe
+!/ChapterChainer.py
+!/LICENSE.md
+!/README.md
+
