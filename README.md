@@ -36,7 +36,7 @@ Alternatives to built-in html parser:
 ### Usage
 
 
-`python3 ChapterChainer.py [Pact|Twig|Worm|Unsong]`
+`python3 ChapterChainer.py [Pact | Twig | Worm | Unsong]`
 
 Unsong only: Optional switches for Author's Notes and Postscript:
 
@@ -44,7 +44,7 @@ Unsong only: Optional switches for Author's Notes and Postscript:
 
 `--omit` skips these pages, `--append` puts them after the story, and `--chronological` (or `--chrono`) leaves them interspersed between chapters in order of publication. 
 
-Argumenta are case sensitive.
+Arguments are case sensitive.
 
 ### Known Issues
 
