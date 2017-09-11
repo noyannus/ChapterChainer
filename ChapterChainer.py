@@ -5,7 +5,7 @@ Download serial web pages into one file.
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 #                                                                             #
-#   This script downloads serial web pages into one file.                     #
+#   This script downloads serial web pages into one html file.                #
 #   Available serials are:                                                    #
 #                                                                             #
 #   Wildbow (John C. McCrae)   'Worm'                                         #
@@ -25,7 +25,7 @@ Download serial web pages into one file.
 #                                                                             #
 #   Usage:                                                                    #
 #         python3 ChapterChainer.py [Pact | Twig | Worm | Unsong]             #
-#   Unsong only: Author's Notes and Postscript:                               #
+#   Unsong only: Option for Author's Notes and Postscript:                    #
 #         [--omit | --append | --chrono[logical]]                             #
 #         '--omit' skips these pages, '--append' puts them after the story,   #
 #         and '--chronological' (or '--chrono') leaves them interspersed      #
