@@ -5,32 +5,36 @@ Download serial web pages into one file.
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 #                                                                             #
-#   This script downloads serial web pages into one html file.                #
-#   Available serials are:                                                    #
+#   This script downloads serial web pages. It follows the 'Next' or 'Next    #
+#   Chapter' link of each page, does some formatting and cleanup of the       #
+#   retrieved html, and outputs all chapters to one large HTML file -- no     #
+#   'Table of Contents' page is required.                                     #
+#                                                                             #
+#   ChapterChainer is heavily commented and uses descriptive variable names   #
+#   to make adding new serials fairly easy. Non-story pages (such as          #
+#   'Author's Notes') can optionally be skipped or appended to the story.     #
+#                                                                             #
+#   Currently built-in serials are:                                           #
 #                                                                             #
 #   Wildbow (John C. McCrae)   'Worm'                                         #
 #                              'Pact'                                         #
 #                              'Twig'                                         #
 #   Scott Alexander            'Unsong' (Author’s Notes optional)             #
 #                                                                             #
-#   The script follows the 'Next' or 'Next Chapter' link of each page, does   #
-#   some formatting and cleanup of the retrieved html, and outputs all        #
-#   chapters to one large HTML file. No Table of Contents page is required.   #
-#   Remarks not pertaining to the story (announcements/greetings/etc.) on     #
-#   some story pages are omitted.                                             #
-#   See code for how to add new serials or fix broken links.                  #
+#   Non-story remarks (announcements/greetings/etc.) on some Unsong story     #
+#   pages are omitted.                                                        #
 #                                                                             #
 #       Required:   Python 3, BeautifulSoup4,                                 #
-#       Optional:   lxml and html5lib for PARSer alternatives                 #
+#       Optional:   lxml and html5lib for parser alternatives                 #
 #                                                                             #
 #   Usage:                                                                    #
 #         python3 ChapterChainer.py [Pact | Twig | Worm | Unsong]             #
-#   Unsong only: Option for Author's Notes and Postscript:                    #
+#   Unsong only: Optional switches for Author's Notes and Postscript:         #
 #         [--omit | --append | --chrono[logical]]                             #
 #         '--omit' skips these pages, '--append' puts them after the story,   #
 #         and '--chronological' (or '--chrono') leaves them interspersed      #
 #         between chapters in order of publication.                           #
-#   Title argument is case sensitive.                                         #
+#   Arguments are case sensitive.                                             #
 #                                                                             #
 #   Please donate to the authors for their writing! Using this script can     #
 #   deny them some needful income from advertising.                           #
@@ -188,6 +192,7 @@ def check_note(chap_title):
     return is_note
 
 
+# noinspection Annotator
 def declutter_wildbow(chap_title_tag, chap_cont_tag):
     """Remove clutter in wanted tags of Wildbow's pages, convert to strings"""
 
@@ -236,8 +241,8 @@ def declutter_wildbow(chap_title_tag, chap_cont_tag):
 
         # Tags except <br/> with no rendered text (they prevent decomposing -?)
         all_tags = chap_cont_tag.find_all()
-        this_re = re.compile(r'^(\s|( )|&nbsp;)*$')  # ( ) is a \xA0
-        #  '( )' aka '\xA0' breaks this
+        # '( )' aka '\xA0' breaks this on last page of unfinished 'Twig'
+        this_re = re.compile(r'^(\s|&nbsp;)*$')
         this_tag_list = [this_tag for this_tag in all_tags
                          if (this_re.match(this_tag.text) and
                              this_tag.name != 'br'
@@ -254,7 +259,7 @@ def declutter_wildbow(chap_title_tag, chap_cont_tag):
 
         # Collapse 2 or 3 spaces after punctuation, some visible entities, or
         # rendering formatting tags
-        # noinspection Annotator  -- Pycharm Inspect Code: ignore
+        # noinspection Annotator  -- Pycharm Inspect Code: ignore,Annotator
         this_re = re.compile(r'([,\.;\:\!\?…’”a-zA-Z0-9]|'  # literals
                              r'(&.?[^s][^p];){3,10};|'  # entities
                              r'(</?(b|i|em|del|strong|span)>))'  # tags
@@ -511,14 +516,14 @@ if __name__ == '__main__':
 
 # For a new serial download source:
 # 1. Add another 'if'-block and set parameters:
-# sys.argv[1]    Command line argument that determines serial to download
-# GET_NOTES      Options for some serials
-# PAGE_TITLE     Script argument determining serial to download
-# PAGES_FILE     File name of resulting HTML file
-# FIRST_LINK     URL of serial's first page
-# WAIT_BETWEEN_REQUESTS Time in seconds to wait between page downloads
-# PARS           Parser used to find links, headlines, content
-#   Available parsers, select one that works well:
+#  sys.argv[1]    Command line argument that determines serial to download
+#  GET_NOTES      Options for some serials
+#  PAGE_TITLE     Script argument determining serial to download
+#  PAGES_FILE     File name of resulting HTML file
+#  FIRST_LINK     URL of serial's first page
+#  WAIT_BETWEEN_REQUESTS Time in seconds to wait between page downloads
+#  PARS           Parser used to find links, headlines, content
+#     Available parsers, select one that works well:
 #       'lxml' (fastest, lenient)
 #       'html.parser' (decent speed, lenient, Python built-in)
 #       'html5lib' (very slow, extremely lenient, parses pages the same way
@@ -526,10 +531,10 @@ if __name__ == '__main__':
 # print          A motto (if you like)
 #
 # 2. Set other parameters in the if-branches above:
-# Parameters that define a link to the next page
-# soup_headline  defines the page headline
-# soup_content   Tag that defines the page content
-# Unwanted clutter to decompose
+#  Parameters that define a link to the next page
+#  soup_headline  defines the page headline
+#  soup_content   Tag that defines the page content
+#  Unwanted clutter to decompose
 #
 # 3. Add argument to all appropriate '(PAGE_TITLE in ...' conditions
 
