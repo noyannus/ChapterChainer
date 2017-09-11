@@ -1,6 +1,7 @@
 -----
 
 *"3:16 All scripture is given by a procedural argument to instantiate."*
+
 [(kingjamesprogramming.tumblr.com)](http://kingjamesprogramming.tumblr.com/)
 
 -----
