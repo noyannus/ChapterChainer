@@ -29,7 +29,7 @@ Download serial web pages into one file.
 #                                                                             #
 #   Usage:                                                                    #
 #         python3 ChapterChainer.py [Pact | Twig | Worm | Unsong]             #
-#   Unsong only: Optional switches for Author's Notes and Postscript:         #
+#     Unsong only: Optional switches for Author's Notes and Postscript:       #
 #         [--omit | --append | --chrono[logical]]                             #
 #         '--omit' skips these pages, '--append' puts them after the story,   #
 #         and '--chronological' (or '--chrono') leaves them interspersed      #
@@ -67,9 +67,9 @@ DEVELOPERS:
 Some editors secretly replace the unicode non-breaking space (\xA0) with a
 space. To check, let editor show 'Invisibles' (or 'Spaces' or 'Whitespace'):
 If '( )' looks like '( )', you may have lost that character, which is used
-in search or replace. (The script should have the capability to treat ' '
+in search or replace. The script should have the capability to treat ' '
 (space), ' ' ('\xA0'), and '&nbsp;' (html entity) differently because they
-may be have been (ab)used for layout purposes in the serials to download.)
+may be have been (ab)used for layout purposes in the serials to download.
 """
 
 import html
@@ -132,7 +132,7 @@ def find_next_link(soup):
             maybe_link = soup.find('a', {'rel': 'next'})['href']
         else:
             this_re = re.compile(r'(Next)(( |( )|&nbsp;)+Chapter)?')  # by Text
-            if soup.find('a', text=this_re) is not None:  # ^^^^ ( ) is a \xA0
+            if soup.find('a', text=this_re) is not None:  # ^^ ( ) is a \xA0
                 maybe_link = soup.find('a', text=this_re)['href']
             else:
                 maybe_link = None
@@ -227,7 +227,7 @@ def declutter_wildbow(chap_title_tag, chap_cont_tag):
         this_re = re.compile(r'(\s|( )|&nbsp;)*(Previous|Next|L?ast|About|'
                              r'( *The *)?End(\s*\(Afterword\))?)'
                              r'(\s|( )|&nbsp;)*(Chapter)?(\s|( )|&nbsp;)*'
-                             )
+                             )  # ^^^ ( ) is a \xA0
         this_tag_list = [this_tag for this_tag in chap_cont_tag.find_all()
                          if this_re.match(this_tag.text)
                          and this_tag.name == 'a'
@@ -241,7 +241,7 @@ def declutter_wildbow(chap_title_tag, chap_cont_tag):
 
         # Tags except <br/> with no rendered text (they prevent decomposing -?)
         all_tags = chap_cont_tag.find_all()
-        # '( )' aka '\xA0' breaks this on last page of unfinished 'Twig'
+        # '( )' aka '\xA0' breaks this on last pages of unfinished 'Twig'
         this_re = re.compile(r'^(\s|&nbsp;)*$')
         this_tag_list = [this_tag for this_tag in all_tags
                          if (this_re.match(this_tag.text) and
@@ -250,17 +250,22 @@ def declutter_wildbow(chap_title_tag, chap_cont_tag):
         for this_tag in this_tag_list:
             this_tag.decompose()
 
-        # Tags to string
+        # Runs of of ≥40 spaces
+        this_re = re.compile(r'^( |( )|&nbsp;){40,}$')  # ( ) is a \xA0
+        for i in chap_cont_tag.find_all('p', text=this_re):
+            i.decompose()
+
+        # Tags to html string
         out_title = html.unescape(str(chap_title_tag))
         out_chap = html.unescape(str(chap_cont_tag))
 
         # Standardize several kinds of breaks to newline
         out_chap = '\n'.join(out_chap.splitlines())
 
-        # Collapse 2 or 3 spaces after punctuation, some visible entities, or
-        # rendering formatting tags
-        # noinspection Annotator  -- Pycharm Inspect Code: ignore,Annotator
-        this_re = re.compile(r'([,\.;\:\!\?…’”a-zA-Z0-9]|'  # literals
+        # Collapse 2 or 3 spaces after: punctuation, some visible entities,
+        # tags that format rendered text
+        # noinspection Annotator
+        this_re = re.compile(r'([,.;:!?…’”a-zA-Z0-9]|'  # literals
                              r'(&.?[^s][^p];){3,10};|'  # entities
                              r'(</?(b|i|em|del|strong|span)>))'  # tags
                              r'(\s|( )|&nbsp;){2,3}'  # ( ) is a \xA0
@@ -276,7 +281,7 @@ def declutter_wildbow(chap_title_tag, chap_cont_tag):
         out_title = this_re.sub(r'\3 ', out_title)
         out_chap = this_re.sub(r'\3 ', out_chap)
 
-    # Un-tag 'Worm' story text in '< >'
+    # Un-tag 'Worm' story text in '<>'
     if PAGE_TITLE == 'Worm':
         tags_to_ident = ([('<Walk!>', '&lt;Walk!&gt;'),
                           ('<Walk or->', '&lt;Walk or-&gt;'),
@@ -362,8 +367,8 @@ def declutter_unsong(chap_title_tag, chap_cont_tag):
                          r'(<hr/>\n<p>The final chapter will be posted next .+'
                          r'on the linked Facebook pages for details\.</p>)|'
                          r'(<p>There.s a video of me reading the final.+'
-                         r'593197826365/.>here</a> \(thanks Ben.\)</p>\n)'
-                         , re.DOTALL
+                         r'593197826365/.>here</a> \(thanks Ben.\)</p>\n)',
+                         re.DOTALL
                          )
     out_chap = re.sub(this_re, '', out_chap)
 
@@ -492,7 +497,7 @@ def start_end_serial_download():
         if GET_NOTES == 'append' and os.path.isfile(NOTES_FILE):
             print('app+  notes+')
             proc_time = time.time()  # Start processing time for appending
-            output.write(open(NOTES_FILE, 'r').read())  # all in memory
+            output.write(open(NOTES_FILE, 'r').read())  # all in memory. hmm...
             # Delete chapter file
             os.remove(NOTES_FILE)
             # User feedback
