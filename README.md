@@ -19,7 +19,8 @@ Currently built-in serials are:
   * [*Pact*](https://pactwebserial.wordpress.com/)
   * [*Twig*](https://twigserial.wordpress.com/) (as published so far)
 * Scott Alexander: [*Unsong*](http://unsongbook.com/) (Author’s Notes optional)
-
+* Abelson, Sussman, Sussman: [Structure and Interpretation of Computer 
+Programs](https://mitpress.mit.edu/sicp/full-text/book/book.html) ('SICP') 2nd edition
 
 Non-story remarks (announcements/greetings/etc.) on some Unsong story pages are omitted. 
 
@@ -37,7 +38,7 @@ Alternatives to built-in html parser:
 ### Usage
 
 
-`python3 ChapterChainer.py [Pact | Twig | Worm | Unsong]`
+`python3 ChapterChainer.py [Pact | Twig | Worm | Unsong | SICP]`
 
 Unsong only: Optional switches for Author's Notes and Postscript:
 
@@ -68,6 +69,8 @@ And you can _vote daily on topwebfiction.com_ if you enjoy reading.
 * Unsong:
   * Patreon link on http://slatestarcodex.com/
   * http://topwebfiction.com/vote.php?for=unsong
+* Structure and Interpretation of Computer Programs:
+  * ???
 
 _This script must not be used to publish a serial without its author's permission._ (This would severely curtail their chances to sell the manuscript, and with no money to make they may give up writing for the web altogether. Also, few could afford the punitive damage for a lost film series deal of something big like 'Worm'. Sorry for the moralizing.) 
 
