@@ -67,12 +67,12 @@ Download serial web pages into one file.
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 DEVELOPERS:
-Editors may secretly replace the unicode non-breaking space (\xA0) with a
-space. To check, display 'Invisibles' (or 'Spaces' or 'Whitespace'):
-If '( )' looks like '( )', you may have lost that character, which is used
-in search or replace. The script should have the capability to treat ' '
-(space), ' ' ('\xA0'), and '&nbsp;' (html entity) differently because they
-may be have been (ab)used for layout purposes in the serials to download.
+Editors may replace the unicode non-breaking space (\xA0) with a space. To
+check, display 'Invisibles' (aka 'Spaces' or 'Whitespace'): If '( )' and '( )'
+look alike, you may have lost that character, which is used in search or
+replace. The script should be able to treat ' ' (space), ' ' ('\xA0'), and
+'&nbsp;' (html entity) differently because they may be have been (ab)used for
+layout purposes in the serials to download.
 """
 
 import html
@@ -88,6 +88,7 @@ import urllib.request
 import bs4
 import html5lib
 import lxml
+
 
 def download_page(next_link, raw_html_file):
     """Download page to temporary file"""
@@ -215,7 +216,7 @@ def check_note(chap_title):
 
 
 def declutter_wildbow(chap_title_tag, chap_cont_tag):
-    """Remove clutter in wanted tags of Wildbow's pages, convert to strings"""
+    """Remove clutter from Wildbow's content, convert to strings"""
 
 #    # Keep to identify unwanted content
 #    if (chap_cont_tag.find_all('a')) is not None:
@@ -319,7 +320,7 @@ def declutter_wildbow(chap_title_tag, chap_cont_tag):
 
 
 def declutter_unsong(chap_title_tag, chap_cont_tag):
-    """Remove clutter in wanted tags of Unsong pages, convert to strings"""
+    """Remove clutter from Unsong content, convert to strings"""
 
 #    # Keep to identify unwanted content
 #    if (chap_cont_tag.find_all('a')) is not None:
@@ -397,25 +398,27 @@ def declutter_unsong(chap_title_tag, chap_cont_tag):
 
 
 def declutter_sicp(chap_cont_tag, next_link):
-    """Remove clutter in wanted tags of SICP pages, convert to strings"""
+    """Remove clutter from SICP content, convert to strings"""
 
     # Navigation links
     for i in chap_cont_tag.find_all('div', {'class': 'navigation'}):
         i.decompose()
 
-    # Make relative 'SICP' links absolute
-    for link_tag in chap_cont_tag.find_all('a', href=True):  # <a …>
-        this_link = link_tag.get('href')
-        if not this_link.startswith('http'):
-            link_tag['href'] = REL_LINK_BASE + link_tag['href']
-    for link_tag in chap_cont_tag.find_all('img', src=True):  # <img …>
-        this_link = link_tag.get('src')
-        if not this_link.startswith('http'):
+    # Point relative text links to within output file
+    this_re = re.compile(r'^([^#]*)#(.+)$')
+    for link_tag in chap_cont_tag.find_all('a', href=True):  # <a href…>
+        if not link_tag.get('href').startswith('http'):  # relative
+            link_tag['href'] = this_re.sub(r'#\2', link_tag['href'])
+
+    # Make relative image sources absolute
+    for link_tag in chap_cont_tag.find_all('img', src=True):  # <img src…>
+        if not link_tag.get('src').startswith('http'):  # relative
             link_tag['src'] = REL_LINK_BASE + link_tag['src']
 
+    # Tags to html string
     out_chap = html.unescape(str(chap_cont_tag))
 
-    # Avoid …</body><body>… between pages
+    # No …</body><body>… at page borders
     if next_link != ('https://mitpress.mit.edu/'
                      'sicp/full-text/book/book.html'):
         out_chap = out_chap.replace('<body>', '')  # not first: no <body>
