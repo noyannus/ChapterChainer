@@ -20,37 +20,40 @@ Download serial web pages into one file.
 #                              'Pact'                                         #
 #                              'Twig'                                         #
 #   Scott Alexander            'Unsong' (Author’s Notes optional)             #
+#   Walter                     'The Fifth Defiance' ('T5D')                   #
 #   Abelson, Sussman, Sussman  'Structure and Interpretation of               #
 #                               Computer Programs' ('SICP') 2nd edition       #
 #                                                                             #
 #   Non-story remarks (announcements/greetings/etc.) on some Unsong story     #
 #   pages are omitted.                                                        #
 #                                                                             #
-#       Required:   Python 3, BeautifulSoup4,                                 #
-#       Optional:   lxml and html5lib for parser alternatives                 #
+#   Required:   Python 3, BeautifulSoup4,                                     #
+#   Optional:   lxml and html5lib for parser alternatives                     #
 #                                                                             #
-#   Usage:                                                                    #
-#         python3 ChapterChainer.py [Pact | Twig | Worm | Unsong | SICP]      #
+#   Usage (Arguments are case sensitive):                                     #
+#     python3 ChapterChainer.py [Pact | Twig | Worm | Unsong | T5D | SICP]    #
 #     Unsong only: Optional switches for Author's Notes and Postscript:       #
-#         [--omit | --append | --chrono[logical]]                             #
-#         '--omit' skips these pages, '--append' puts them after the story,   #
-#         and '--chronological' (or '--chrono') leaves them interspersed      #
-#         between chapters in order of publication.                           #
-#   Arguments are case sensitive.                                             #
+#       [--omit | --append | --chrono[logical]]                               #
+#       '--omit' skips these pages, '--append' puts them after the story,     #
+#       and '--chronological' (or '--chrono') leaves them interspersed        #
+#       between chapters in order of publication.                             #
 #                                                                             #
 #   Please donate to the authors for their writing! Using this script can     #
 #   deny them some needful income from advertising.                           #
-#   Easy donation options are on their sites.                                 #
+#   Easy donation options are on their sites. As usually are options to       #
+#   share, like, and comment (high added value from audience sometimes!)      #
 #   And you can vote daily on topwebfiction.com if you enjoy reading.         #
-#        Worm:    https://parahumans.wordpress.com/                           #
-#                 http://topwebfiction.com/vote.php?for=worm                  #
-#        Pact:    https://pactwebserial.wordpress.com/                        #
-#                 http://topwebfiction.com/vote.php?for=pact                  #
-#        Twig:    https://twigserial.wordpress.com/                           #
-#                 http://topwebfiction.com/vote.php?for=twig                  #
-#        Unsong:  Patreon link on http://slatestarcodex.com/                  #
-#                 http://topwebfiction.com/vote.php?for=unsong                #
-#        Structure and Interpretation of Computer Programs: ????              #
+#       Worm:    https://parahumans.wordpress.com/                            #
+#                http://topwebfiction.com/vote.php?for=worm                   #
+#       Pact:    https://pactwebserial.wordpress.com/                         #
+#                http://topwebfiction.com/vote.php?for=pact                   #
+#       Twig:    https://twigserial.wordpress.com/                            #
+#                http://topwebfiction.com/vote.php?for=twig                   #
+#       Unsong:  Patreon link on http://slatestarcodex.com/                   #
+#                http://topwebfiction.com/vote.php?for=unsong                 #
+#       The Fifth Defiance: ???                                               #
+#                http://topwebfiction.com/vote.php?for=the-fifth-defiance     #
+#       Structure and Interpretation of Computer Programs: ????               #
 #                                                                             #
 #   This script must not be used to publish a serial without its author's     #
 #   permission. (This would severely curtail their chances to sell the        #
@@ -128,7 +131,7 @@ def find_next_link(soup):
     """Return a link to the next page"""
 
     # 'Worm', 'Pact', 'Twig', 'Unsong': various link texts
-    if PAGE_TITLE in ('Worm', 'Pact', 'Twig', 'Unsong'):
+    if PAGE_TITLE in ('Worm', 'Pact', 'Twig', 'Unsong', 'The Fifth Defiance'):
         if soup.find('a', {'rel': 'next'}) is not None:  # find by 'rel'='next'
             maybe_link = soup.find('a', {'rel': 'next'})['href']
         else:
@@ -177,8 +180,8 @@ def find_next_link(soup):
 def get_wanted_content_tags(soup):
     """Get tags that hold headline and wanted content"""
 
-    # 'Worm', 'Pact', 'Twig'
-    if PAGE_TITLE in ('Worm', 'Pact', 'Twig'):
+    # 'Worm', 'Pact', 'Twig', 'The Fifth Defiance'
+    if PAGE_TITLE in ('Worm', 'Pact', 'Twig', 'The Fifth Defiance'):
         chap_title_tag = soup.find('h1', {'class': 'entry-title'})
         chap_cont_tag = soup.find('div', {'class': 'entry-content'})
 
@@ -284,9 +287,8 @@ def declutter_wildbow(chap_title_tag, chap_cont_tag):
         # Standardize several kinds of breaks to newline
         out_chap = '\n'.join(out_chap.splitlines())
 
-        # Collapse 2 or 3 spaces after: punctuation, some visible entities,
+        # Collapse 2 or 3 whitespace after: punctuation, some visible entities,
         # tags that format rendered text
-        # noinspection Annotator
         this_re = re.compile(r'([,.;:!?…’”a-zA-Z0-9]|'  # literals
                              r'(&.?[^s][^p];){3,10};|'  # entities
                              r'(</?(b|i|em|del|strong|span)>))'  # tags
@@ -295,7 +297,7 @@ def declutter_wildbow(chap_title_tag, chap_cont_tag):
         out_title = this_re.sub(r'\1 ', out_title)
         out_chap = this_re.sub(r'\1 ', out_chap)
 
-        # No space/newline before AND after certain tags
+        # No whitespace before AND after certain tags
         this_re = re.compile(r'(\s|( )|&nbsp;)'  # ( ) is a \xA0
                              r'(</?(b|i|em|del|strong|span)>)'
                              r'(\s|( )|&nbsp;)'  # ( ) is a \xA0
@@ -315,17 +317,15 @@ def declutter_wildbow(chap_title_tag, chap_cont_tag):
             # noinspection PyUnboundLocalVariable
             out_chap = out_chap.replace(from_tag, to_ident)
 
+    # Add blank line between chapters
+    out_chap += '<p>&nbsp;</p>'
+
     # noinspection PyUnboundLocalVariable
     return out_title, out_chap
 
 
 def declutter_unsong(chap_title_tag, chap_cont_tag):
     """Remove clutter from Unsong content, convert to strings"""
-
-#    # Keep to identify unwanted content
-#    if (chap_cont_tag.find_all('a')) is not None:
-#        for i in(chap_cont_tag.find_all('a')):
-#            print(i)
 
     # Navigation links
     this_re = re.compile(r'(prev|next)')
@@ -337,9 +337,9 @@ def declutter_unsong(chap_title_tag, chap_cont_tag):
             'div', {'class': 'sharedaddy sd-sharing-enabled'}):
         i.decompose()
 
-    # Tags to string
-    out_title = str(chap_title_tag)
-    out_chap = str(chap_cont_tag)
+    # Tags to html string
+    out_title = html.unescape(str(chap_title_tag))
+    out_chap = html.unescape(str(chap_cont_tag))
 
     # 'End of Book…' Season's greetings
     this_re = re.compile(r'(<hr/>\n<p></p><center><b>End of Book [^<]+)'
@@ -348,21 +348,21 @@ def declutter_unsong(chap_title_tag, chap_cont_tag):
     out_chap = re.sub(this_re, r'\1\2', out_chap)
 
     # Author's Note announcements
-    this_re = re.compile(  # '<hr/>\n<p> …'
+    this_re = re.compile(  # find by '<hr/>\n<p> …'
         r'<hr/>\n<p>(<font size="1">|<i>)+.+'
         '(<a href="https?://unsongbook.com/authors-note-).+'
         '((</i>|</font>)+</p>|((<br/>\n.?)+</center>))', re.DOTALL
         )
     out_chap = re.sub(this_re, '', out_chap)
 
-    this_re = re.compile(  # '<p>[ …' ;  '[^C]' b/c '[Content warning:…'
+    this_re = re.compile(  # find by '<p>[ …' ;  '[^C]' b/c '[Content warning:'
         r'<p>(<font size="1">|<i>)+\[[^C].+'
         '(<a href="https?://unsongbook.com/authors-note-).+'
         '((</i>|</font>)+</p>|((<br/>\n.?)+</center>))', re.DOTALL
         )
     out_chap = re.sub(this_re, '', out_chap)
 
-    this_re = re.compile(  # '<p></p><center>…'
+    this_re = re.compile(  # find by '<p></p><center>…'
         r'<p></p><center><br/>\n\.<br/>.+'
         '(<a href="https?://unsongbook.com/authors-note-).+'
         '((</i>|</font>)+</p>|((<br/>\n.?)+</center>))', re.DOTALL
@@ -394,6 +394,48 @@ def declutter_unsong(chap_title_tag, chap_cont_tag):
                          )
     out_chap = re.sub(this_re, '', out_chap)
 
+    # Add blank line between chapters
+    out_chap += '<p>&nbsp;</p>'
+
+    return out_title, out_chap
+
+
+def declutter_t5d(chap_title_tag, chap_cont_tag):
+    """Remove clutter from The Fifth Defiance content, convert to strings"""
+
+    # Social web
+    chap_cont_tag.find('div', {'id': 'jp-post-flair'}).decompose()
+
+    # Tags to html string
+    out_title = html.unescape(str(chap_title_tag))
+    out_chap = html.unescape(str(chap_cont_tag))
+
+    # Collapse 2 or 3 whitespaces after: punctuation, some visible entities,
+    # tags that format rendered text
+    this_re = re.compile(r'([,.;:!?…’”a-zA-Z0-9]|'  # literals
+                         r'(&.?[^s][^p];){3,10};|'  # entities
+                         r'(</?(b|i|em|del|strong|span)>))'  # tags
+                         r'(\s|( )|&nbsp;){2,3}'  # ( ) is a \xA0
+                         )
+    out_title = this_re.sub(r'\1 ', out_title)
+    out_chap = this_re.sub(r'\1 ', out_chap)
+
+    # No whitespace before AND after certain tags
+    this_re = re.compile(r'(\s|( )|&nbsp;)'  # ( ) is a \xA0
+                         r'(</?(b|i|em|del|strong|span)>)'
+                         r'(\s|( )|&nbsp;)'  # ( ) is a \xA0
+                         )
+    out_title = this_re.sub(r'\3 ', out_title)
+    out_chap = this_re.sub(r'\3 ', out_chap)
+
+    # No space after opening quotes
+    this_re = re.compile(r'(‘|“|&l[sd]quo;)(\s|( )|&nbsp;)')  # ( ) is a \xA0
+    out_title = this_re.sub(r'\1', out_title)
+    out_chap = this_re.sub(r'\1', out_chap)
+
+    # Add blank line between chapters
+    out_chap += '<p>&nbsp;</p>'
+
     return out_title, out_chap
 
 
@@ -424,6 +466,9 @@ def declutter_sicp(chap_cont_tag, next_link):
         out_chap = out_chap.replace('<body>', '')  # not first: no <body>
     if next_link != '':
         out_chap = out_chap.replace('</body>', '')  # not last: no </body>
+
+    # Add blank line between chapters
+    out_chap += '<p>&nbsp;</p>'
 
     return out_chap
 
@@ -499,6 +544,11 @@ def process_page(next_link, page_count, write_to_file):
                     write_to_file = NOTES_FILE
                 else:
                     write_to_file = PAGES_FILE
+
+            if PAGE_TITLE == 'The Fifth Defiance':
+                # Remove clutter
+                (out_title, out_chap) = declutter_t5d(chap_title_tag,
+                                                      chap_cont_tag)
 
             if PAGE_TITLE == 'SICP':
                 # Remove clutter
@@ -675,6 +725,13 @@ if __name__ == '__main__':
               '(kingjamesprogramming.tumblr.com)\n'
               )
 
+    # 'The Fifth Defiance'
+    if len(sys.argv) > 1 and sys.argv[1] == 'T5D':
+        PAGE_TITLE = 'The Fifth Defiance'
+        PAGES_FILE = PAGE_TITLE + '.html'
+        FIRST_LINK = 'https://thefifthdefiance.com/2015/11/02/introduction/'
+        PARS = 'lxml'
+
     # 'SICP' (Structure and Interpretation of Computer Programs)
     if len(sys.argv) > 1 and sys.argv[1] == 'SICP':
         PAGE_TITLE = sys.argv[1]
@@ -688,7 +745,7 @@ if __name__ == '__main__':
 
     # Check for correct argument (serial, options)
     if len(sys.argv) <= 1 or (sys.argv[1]
-                              not in ('Worm', 'Pact', 'Twig', 'Unsong',
+                              not in ('Worm', 'Pact', 'Twig', 'Unsong', 'T5D',
                                       'SICP')):
         print('\n_serial to download not or incorrectly stated.\n'
               'Usage: python3 Book_worm.py '

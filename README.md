@@ -19,6 +19,7 @@ Currently built-in serials are:
   * [*Pact*](https://pactwebserial.wordpress.com/)
   * [*Twig*](https://twigserial.wordpress.com/) (as published so far)
 * Scott Alexander: [*Unsong*](http://unsongbook.com/) (Author’s Notes optional)
+* Walter: [*The Fifth Defiance*](https://thefifthdefiance.com/about/) ('T5D') (as published so far)
 * Abelson, Sussman, Sussman: [Structure and Interpretation of Computer 
 Programs](https://mitpress.mit.edu/sicp/full-text/book/book.html) ('SICP') 2nd edition
 
@@ -37,8 +38,9 @@ Alternatives to built-in html parser:
 
 ### Usage
 
+Arguments are case sensitive
 
-`python3 ChapterChainer.py [Pact | Twig | Worm | Unsong | SICP]`
+`python3 ChapterChainer.py [Pact | Twig | Worm | Unsong | T5D | SICP]`
 
 Unsong only: Optional switches for Author's Notes and Postscript:
 
@@ -69,6 +71,9 @@ And you can _vote daily on topwebfiction.com_ if you enjoy reading.
 * Unsong:
   * Patreon link on http://slatestarcodex.com/
   * http://topwebfiction.com/vote.php?for=unsong
+* The Fifth Defiance:
+  * ???
+  * http://topwebfiction.com/vote.php?for=the-fifth-defiance
 * Structure and Interpretation of Computer Programs:
   * ???
 
