@@ -1,8 +1,6 @@
 #!python3
 # -*- coding: utf-8 -*-
 """
-Download serial web pages into one file.
-
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 #                                                                             #
 #   This script downloads serial web pages. It follows the 'Next' or 'Next    #
@@ -68,15 +66,8 @@ Download serial web pages into one file.
 #                                       (kingjamesprogramming.tumblr.com)     #
 #                                                                             #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-
-DEVELOPERS:
-Editors may replace the unicode non-breaking space (\xA0) with a space. To
-check, display 'Invisibles' (aka 'Spaces' or 'Whitespace'): If '( )' and '( )'
-look alike, you may have lost that character, which is used in search or
-replace. The script should be able to treat ' ' (space), ' ' ('\xA0'), and
-'&nbsp;' (html entity) differently because they may be have been (ab)used for
-layout purposes in the serials to download.
 """
+
 
 import html
 import os
@@ -89,8 +80,8 @@ import urllib.parse
 import urllib.request
 
 import bs4
-import html5lib
-import lxml
+import html5lib  # is or may be used, ignore code inspector's complaint
+import lxml  # ditto
 
 
 def download_page(next_link, raw_html_file):
@@ -99,12 +90,12 @@ def download_page(next_link, raw_html_file):
     # Timing
     down_time = time.time()  # Start download time
 
-    # Save retrieved html to temp file.
-    # (Keep the 'try..' for debugging connections and leave broad despite
-    # pylint complaining.)
+    # Save retrieved html to temp file
+    # Keep the 'try..'  and leave broad despite pylint complaining, in case
+    # a connection need debugging
     try:
-        # Spoof the User-Agent, in case Python is a blacklisted agent
-        # and receives a 403. Valid agents e.g. @
+        # Spoof the User-Agent, in case Python is a blacklisted agent and
+        # receives a 403. Use valid agent e.g. from
         # https://techblog.willshouse.com/2012/01/03/most-common-user-agents/
         request = urllib.request.Request(next_link, data=None, headers={
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) \
@@ -134,10 +125,9 @@ def find_next_link(soup):
     if PAGE_TITLE in ('Worm', 'Pact', 'Twig', 'Unsong', 'The Fifth Defiance'):
         if soup.find('a', {'rel': 'next'}) is not None:  # find by 'rel'='next'
             maybe_link = soup.find('a', {'rel': 'next'})['href']
-        else:
-            this_re = re.compile(r'(Next)(( |( )|&nbsp;)+Chapter)?')  #
-            #  by Text
-            if soup.find('a', text=this_re) is not None:  # ^^ ( ) is a \xA0
+        else:  # find by link text
+            this_re = re.compile(r'(Next)(( |0xC2A0|&nbsp;)+Chapter)?')
+            if soup.find('a', text=this_re) is not None:
                 maybe_link = soup.find('a', text=this_re)['href']
             else:
                 maybe_link = None
@@ -211,8 +201,9 @@ def check_note(chap_title):
     """Check if downloaded page is a Notes page"""
 
     # Check title for Notes page
+    # 'Unsong'
     if PAGE_TITLE == 'Unsong':
-        this_re = re.compile(r'^(Author.s Note|Postscript)')  # Unsong
+        this_re = re.compile(r'^(Author.s Note|Postscript)')
         is_note = this_re.search(chap_title)
 
     return is_note
@@ -249,10 +240,12 @@ def declutter_wildbow(chap_title_tag, chap_cont_tag):
     if PAGE_TITLE in ('Worm', 'Pact', 'Twig'):
 
         # Navigation links
-        this_re = re.compile(r'(\s|( )|&nbsp;)*(Previous|Next|L?ast|About|'
+        this_re = re.compile(r'(\s|&nbsp;)*'
+                             r'(Previous|Next|L?ast|About|'
                              r'( *The *)?End(\s*\(Afterword\))?)'
-                             r'(\s|( )|&nbsp;)*(Chapter)?(\s|( )|&nbsp;)*'
-                             )  # ^^^ ( ) is a \xA0
+                             r'(\s|&nbsp;)*(Chapter)?'
+                             r'(\s|&nbsp;)*'
+                             )
         this_tag_list = [this_tag for this_tag in chap_cont_tag.find_all()
                          if this_re.match(this_tag.text)
                          and this_tag.name == 'a'
@@ -266,7 +259,6 @@ def declutter_wildbow(chap_title_tag, chap_cont_tag):
 
         # Tags except <br/> with no rendered text (they prevent decomposing -?)
         all_tags = chap_cont_tag.find_all()
-        # '( )' aka '\xA0' breaks this on last pages of unfinished 'Twig'
         this_re = re.compile(r'^(\s|&nbsp;)*$')
         this_tag_list = [this_tag for this_tag in all_tags
                          if (this_re.match(this_tag.text) and
@@ -275,8 +267,8 @@ def declutter_wildbow(chap_title_tag, chap_cont_tag):
         for this_tag in this_tag_list:
             this_tag.decompose()
 
-        # Runs of of ≥40 spaces
-        this_re = re.compile(r'^( |( )|&nbsp;){40,}$')  # ( ) is a \xA0
+        # Tags with only runs of of ≥40 spaces
+        this_re = re.compile(r'^( |0xC2A0|&nbsp;){40,}$')
         for i in chap_cont_tag.find_all('p', text=this_re):
             i.decompose()
 
@@ -285,27 +277,41 @@ def declutter_wildbow(chap_title_tag, chap_cont_tag):
         out_chap = html.unescape(str(chap_cont_tag))
 
         # Standardize several kinds of breaks to newline
-        out_chap = '\n'.join(out_chap.splitlines())
+        out_chap = '\n'.join(out_chap.splitlines())  # misses '0x2028' - bug?
+        out_chap = out_chap.replace(u'\u2028', '\n')
 
-        # Collapse 2 or 3 whitespace after: punctuation, some visible entities,
+        # Whitespace not before AND after tags that format rendered text
+        this_re = re.compile(r'(\s|&nbsp;)'
+                             r'(</?(b|i|em|del|strong|span)>)'
+                             r'(\s|&nbsp;)'
+                             )
+        out_title = this_re.sub(r'\2 ', out_title)
+        out_chap = this_re.sub(r'\2 ', out_chap)
+
+        # Collapse 2 to 4 whitespace after punctuation, non-space entities,
         # tags that format rendered text
-        this_re = re.compile(r'([,.;:!?…’”a-zA-Z0-9]|'  # literals
-                             r'(&.?[^s][^p];){3,10};|'  # entities
+        this_re = re.compile(r'([,.;:!?&…’”a-zA-Z0-9]|'  # literals
+                             r'(&.{3,10}(?!sp);)|'  # entities not '&…sp;'
                              r'(</?(b|i|em|del|strong|span)>))'  # tags
-                             r'(\s|( )|&nbsp;){2,3}'  # ( ) is a \xA0
+                             r'(\s|&nbsp;){2,4}'
                              )
         out_title = this_re.sub(r'\1 ', out_title)
         out_chap = this_re.sub(r'\1 ', out_chap)
 
-        # No whitespace before AND after certain tags
-        this_re = re.compile(r'(\s|( )|&nbsp;)'  # ( ) is a \xA0
-                             r'(</?(b|i|em|del|strong|span)>)'
-                             r'(\s|( )|&nbsp;)'  # ( ) is a \xA0
+        # No non-breaking space after punctuation, non-space entities
+        this_re = re.compile(r'([,.;:!?&…’”a-zA-Z0-9]|'  # literals
+                             r'(&.{3,10}(?!sp);))'  # entities not '&…sp;'
+                             r'(0xC2A0|&nbsp;)'
                              )
-        out_title = this_re.sub(r'\3 ', out_title)
-        out_chap = this_re.sub(r'\3 ', out_chap)
+        out_title = this_re.sub(r'\1 ', out_title)
+        out_chap = this_re.sub(r'\1 ', out_chap)
 
-    # Un-tag 'Worm' story text in '<>'
+        # Collapse multiple newlines and leading spaces (not really necessary…)
+        this_re = re.compile(r'(\n{2,} *|\n +)')
+        out_title = this_re.sub(r'\n', out_title)
+        out_chap = this_re.sub(r'\n', out_chap)
+
+    # Un-tag 'Worm' story text in '< … >'
     if PAGE_TITLE == 'Worm':
         tags_to_ident = ([('<Walk!>', '&lt;Walk!&gt;'),
                           ('<Walk or->', '&lt;Walk or-&gt;'),
@@ -410,26 +416,24 @@ def declutter_t5d(chap_title_tag, chap_cont_tag):
     out_title = html.unescape(str(chap_title_tag))
     out_chap = html.unescape(str(chap_cont_tag))
 
-    # Collapse 2 or 3 whitespaces after: punctuation, some visible entities,
+    # Collapse 2 to 4 whitespace after punctuation, non-space entities,
     # tags that format rendered text
-    this_re = re.compile(r'([,.;:!?…’”a-zA-Z0-9]|'  # literals
-                         r'(&.?[^s][^p];){3,10};|'  # entities
+    this_re = re.compile(r'([,.;:!?&…’”a-zA-Z0-9]|'  # literals
+                         r'(&.{3,10}(?!sp);)|'  # entities not '&…sp;'
                          r'(</?(b|i|em|del|strong|span)>))'  # tags
-                         r'(\s|( )|&nbsp;){2,3}'  # ( ) is a \xA0
-                         )
+                         r'(\s|&nbsp;){2,4}')
     out_title = this_re.sub(r'\1 ', out_title)
     out_chap = this_re.sub(r'\1 ', out_chap)
 
-    # No whitespace before AND after certain tags
-    this_re = re.compile(r'(\s|( )|&nbsp;)'  # ( ) is a \xA0
+    # Whitespace not before AND after tags that format rendered text
+    this_re = re.compile(r'(\s|&nbsp;)'
                          r'(</?(b|i|em|del|strong|span)>)'
-                         r'(\s|( )|&nbsp;)'  # ( ) is a \xA0
-                         )
-    out_title = this_re.sub(r'\3 ', out_title)
-    out_chap = this_re.sub(r'\3 ', out_chap)
+                         r'(\s|&nbsp;)')
+    out_title = this_re.sub(r'\2 ', out_title)
+    out_chap = this_re.sub(r'\2 ', out_chap)
 
     # No space after opening quotes
-    this_re = re.compile(r'(‘|“|&l[sd]quo;)(\s|( )|&nbsp;)')  # ( ) is a \xA0
+    this_re = re.compile(r'(‘|“|&l[sd]quo;)(\s|&nbsp;)')
     out_title = this_re.sub(r'\1', out_title)
     out_chap = this_re.sub(r'\1', out_chap)
 
@@ -499,7 +503,7 @@ def process_page(next_link, page_count, write_to_file):
         # Get page title and clean some whitespace
         if chap_title_tag is not None:
             chap_title = ''.join(chap_title_tag.get_text())
-            this_re = re.compile(r'(\s|( )|&nbsp;)+')  # ( ) is a \xA0
+            this_re = re.compile(r'(\s|&nbsp;)+')
             chap_title = this_re.sub(r' ', chap_title).strip()
         else:
             chap_title = '<No Page Headline>'
@@ -653,7 +657,7 @@ if __name__ == '__main__':
 #  soup_content   Tag that defines the page content
 #  Unwanted clutter to decompose
 #
-# 3. Add argument to all appropriate '(PAGE_TITLE in ...' conditions
+# 3. Add argument to all appropriate '(PAGE_TITLE [in | ==]' conditions
 
     # 'Worm'
     if len(sys.argv) > 1 and sys.argv[1] == 'Worm':
