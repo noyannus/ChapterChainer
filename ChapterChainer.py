@@ -33,7 +33,7 @@
 #     Unsong only: Optional switches for Author's Notes and Postscript:       #
 #       [--omit | --append | --chrono[logical]]                               #
 #       '--omit' skips these pages, '--append' puts them after the story,     #
-#       and '--chronological' (or '--chrono') leaves them interspersed        #
+#       and '--chronological' (or '--chrono') keeps them interspersed         #
 #       between chapters in order of publication.                             #
 #                                                                             #
 #   Please donate to the authors for their writing! Using this script can     #
@@ -88,16 +88,16 @@ def download_page(next_link, raw_html_file):
     """Download page to temporary file"""
 
     # Timing
-    down_time = time.time()  # Start download time
+    down_start_time = time.time()  # Start download time
 
     # Save retrieved html to temp file
     # Keep the 'try..'  and leave broad despite pylint complaining, in case
-    # a connection need debugging
+    # a connection needs debugging
     try:
         # Spoof the User-Agent, in case Python is a blacklisted agent and
         # receives a 403. Use valid agent e.g. from
         # https://techblog.willshouse.com/2012/01/03/most-common-user-agents/
-        request = urllib.request.Request(next_link, data=None, headers={
+        request = urllib.request.Request(next_link, headers={
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) \
             AppleWebKit/537.36 (KHTML, like Gecko) Chrome/59.0.3071.115 \
             Safari/537.36'})
@@ -112,34 +112,29 @@ def download_page(next_link, raw_html_file):
         print(inst)         # __str__ allows args to be printed directly
         sys.exit()          # stop gracefully
 
-    # Timing
-    down_time = str(time.time() - down_time)  # Download time
-
-    return down_time
+    return str(time.time() - down_start_time)  # Download time
 
 
 def find_next_link(soup):
     """Return a link to the next page"""
 
+    maybe_link = None
+
     # 'Worm', 'Pact', 'Twig', 'Unsong': various link texts
-    if PAGE_TITLE in ('Worm', 'Pact', 'Twig', 'Unsong', 'The Fifth Defiance'):
+    if PAGE_TITLE in ('Worm', 'Pact', 'Twig', 'Unsong', 'T5D'):
         if soup.find('a', {'rel': 'next'}) is not None:  # find by 'rel'='next'
             maybe_link = soup.find('a', {'rel': 'next'})['href']
         else:  # find by link text
             this_re = re.compile(r'(Next)(( |0xC2A0|&nbsp;)+Chapter)?')
             if soup.find('a', text=this_re) is not None:
                 maybe_link = soup.find('a', text=this_re)['href']
-            else:
-                maybe_link = None
 
+    # Only 'next' as link text
     if PAGE_TITLE == 'SICP':
-        #  Only 'next' as link text
         if soup.find('a', text='next') is not None:
             maybe_link = soup.find('a', text='next')['href']
             # Make the relative 'SICP' links absolute
             maybe_link = REL_LINK_BASE + maybe_link
-        else:
-            maybe_link = None
 
     # Store url if found, replace broken links
     if maybe_link is not None:
@@ -147,7 +142,7 @@ def find_next_link(soup):
     else:
         next_link = ''
 
-#    To work around links that have slipped detection or are broken,
+#    To work around links that slip detection or are broken,
 #    repeat for each link:
 #    1. duplicate commented explanation and 'if' block below,
 #    2. uncomment it, and
@@ -167,11 +162,11 @@ def find_next_link(soup):
     return next_link
 
 
-def get_wanted_content_tags(soup):
+def get_wanted_content_tags(soup, chap_title_tag, chap_cont_tag):
     """Get tags that hold headline and wanted content"""
 
-    # 'Worm', 'Pact', 'Twig', 'The Fifth Defiance'
-    if PAGE_TITLE in ('Worm', 'Pact', 'Twig', 'The Fifth Defiance'):
+    # 'Worm', 'Pact', 'Twig', 'T5D'
+    if PAGE_TITLE in ('Worm', 'Pact', 'Twig', 'T5D'):
         chap_title_tag = soup.find('h1', {'class': 'entry-title'})
         chap_cont_tag = soup.find('div', {'class': 'entry-content'})
 
@@ -182,23 +177,21 @@ def get_wanted_content_tags(soup):
 
     # 'SICP'
     if PAGE_TITLE == 'SICP':
-        # For title on console, try to find h1 with text
+        # Get a headline: try first h1, then try h2, then leave None
         if soup.find('h1') is not None:
             chap_title_tag = soup.find('h1')
-        # No? Try to find h2 with text
         elif soup.find('h2') is not None:
             chap_title_tag = soup.find('h2')
-        # No? Give up, nothing to return
-        else:
-            chap_title_tag = None
+
         chap_cont_tag = soup.find('body')
 
-    # noinspection PyUnboundLocalVariable
     return chap_title_tag, chap_cont_tag
 
 
 def check_note(chap_title):
     """Check if downloaded page is a Notes page"""
+
+    is_note = None
 
     # Check title for Notes page
     # 'Unsong'
@@ -217,7 +210,7 @@ def declutter_wildbow(chap_title_tag, chap_cont_tag):
 #        for i in(chap_cont_tag.find_all('a')):
 #            print(i)
 
-    # 'Pact'
+    # Tags -- 'Pact' only
     if PAGE_TITLE == 'Pact':
         # Advertisement
         for i in chap_cont_tag.find_all('div', {'class': 'wpcnt'}):
@@ -228,7 +221,7 @@ def declutter_wildbow(chap_title_tag, chap_cont_tag):
         for i in chap_cont_tag.find_all('strong', text='Last Chapter'):
             i.decompose()
 
-    # 'Twig'
+    # Tags -- 'Twig' only
     if PAGE_TITLE == 'Twig':
         # Mysterious white dot
         for i in chap_cont_tag.find_all('span', {'style': 'color:#ffffff;'},
@@ -236,82 +229,78 @@ def declutter_wildbow(chap_title_tag, chap_cont_tag):
                                         ):
             i.decompose()
 
-    # 'Worm', 'Pact', 'Twig'
-    if PAGE_TITLE in ('Worm', 'Pact', 'Twig'):
+    # Tags -- 'Worm', 'Pact', 'Twig'
+    # Navigation links
+    this_re = re.compile(r'(\s|&nbsp;)*'
+                         r'(Previous|Next|L?ast|About|'
+                         r'( *The *)?End(\s*\(Afterword\))?)'
+                         r'(\s|&nbsp;)*(Chapter)?'
+                         r'(\s|&nbsp;)*'
+                         )
+    this_tag_list = [this_tag for this_tag in chap_cont_tag.find_all()
+                     if this_re.match(this_tag.text)
+                     and this_tag.name == 'a'
+                     ]
+    for this_tag in this_tag_list:
+        this_tag.decompose()
+    # Social web
+    for i in chap_cont_tag.find_all('div', id='jp-post-flair'):
+        i.decompose()
+    # Tags except <br/> with no rendered text (they prevent decomposing -?)
+    all_tags = chap_cont_tag.find_all()
+    this_re = re.compile(r'^(\s|&nbsp;)*$')
+    this_tag_list = [this_tag for this_tag in all_tags
+                     if (this_re.match(this_tag.text) and
+                         this_tag.name != 'br'
+                         )]
+    for this_tag in this_tag_list:
+        this_tag.decompose()
+    # Tags with only runs of of ≥40 spaces
+    this_re = re.compile(r'^( |0xC2A0|&nbsp;){40,}$')
+    for i in chap_cont_tag.find_all('p', text=this_re):
+        i.decompose()
 
-        # Navigation links
-        this_re = re.compile(r'(\s|&nbsp;)*'
-                             r'(Previous|Next|L?ast|About|'
-                             r'( *The *)?End(\s*\(Afterword\))?)'
-                             r'(\s|&nbsp;)*(Chapter)?'
-                             r'(\s|&nbsp;)*'
-                             )
-        this_tag_list = [this_tag for this_tag in chap_cont_tag.find_all()
-                         if this_re.match(this_tag.text)
-                         and this_tag.name == 'a'
-                         ]
-        for this_tag in this_tag_list:
-            this_tag.decompose()
+    # HTML string -- 'Worm', 'Pact', 'Twig'
+    # Tags to html string
+    out_title = html.unescape(str(chap_title_tag))
+    out_chap = html.unescape(str(chap_cont_tag))
 
-        # Social web
-        for i in chap_cont_tag.find_all('div', id='jp-post-flair'):
-            i.decompose()
+    # Standardize several kinds of breaks to newline
+    out_chap = '\n'.join(out_chap.splitlines())  # misses '0x2028' - bug?
+    out_chap = out_chap.replace(u'\u2028', '\n')
 
-        # Tags except <br/> with no rendered text (they prevent decomposing -?)
-        all_tags = chap_cont_tag.find_all()
-        this_re = re.compile(r'^(\s|&nbsp;)*$')
-        this_tag_list = [this_tag for this_tag in all_tags
-                         if (this_re.match(this_tag.text) and
-                             this_tag.name != 'br'
-                             )]
-        for this_tag in this_tag_list:
-            this_tag.decompose()
+    # Whitespace not before AND after tags that format rendered text
+    this_re = re.compile(r'(\s|&nbsp;)'
+                         r'(</?(b|i|em|del|strong|span)>)'
+                         r'(\s|&nbsp;)'
+                         )
+    out_title = this_re.sub(r'\2 ', out_title)
+    out_chap = this_re.sub(r'\2 ', out_chap)
 
-        # Tags with only runs of of ≥40 spaces
-        this_re = re.compile(r'^( |0xC2A0|&nbsp;){40,}$')
-        for i in chap_cont_tag.find_all('p', text=this_re):
-            i.decompose()
+    # Collapse 2 to 4 whitespace after punctuation, non-space entities,
+    # tags that format rendered text
+    this_re = re.compile(r'([,.;:!?&…’”a-zA-Z0-9]|'  # literals
+                         r'(&.{3,10}(?!sp);)|'  # entities not '&…sp;'
+                         r'(</?(b|i|em|del|strong|span)>))'  # tags
+                         r'(\s|&nbsp;){2,4}'
+                         )
+    out_title = this_re.sub(r'\1 ', out_title)
+    out_chap = this_re.sub(r'\1 ', out_chap)
 
-        # Tags to html string
-        out_title = html.unescape(str(chap_title_tag))
-        out_chap = html.unescape(str(chap_cont_tag))
+    # No non-breaking space after punctuation, non-space entities
+    this_re = re.compile(r'([,.;:!?&…’”a-zA-Z0-9]|'  # literals
+                         r'(&.{3,10}(?!sp);))'  # entities not '&…sp;'
+                         r'(0xC2A0|&nbsp;)'
+                         )
+    out_title = this_re.sub(r'\1 ', out_title)
+    out_chap = this_re.sub(r'\1 ', out_chap)
 
-        # Standardize several kinds of breaks to newline
-        out_chap = '\n'.join(out_chap.splitlines())  # misses '0x2028' - bug?
-        out_chap = out_chap.replace(u'\u2028', '\n')
+    # Collapse multiple newlines and leading spaces (not really necessary…)
+    this_re = re.compile(r'(\n{2,} *|\n +)')
+    out_title = this_re.sub(r'\n', out_title)
+    out_chap = this_re.sub(r'\n', out_chap)
 
-        # Whitespace not before AND after tags that format rendered text
-        this_re = re.compile(r'(\s|&nbsp;)'
-                             r'(</?(b|i|em|del|strong|span)>)'
-                             r'(\s|&nbsp;)'
-                             )
-        out_title = this_re.sub(r'\2 ', out_title)
-        out_chap = this_re.sub(r'\2 ', out_chap)
-
-        # Collapse 2 to 4 whitespace after punctuation, non-space entities,
-        # tags that format rendered text
-        this_re = re.compile(r'([,.;:!?&…’”a-zA-Z0-9]|'  # literals
-                             r'(&.{3,10}(?!sp);)|'  # entities not '&…sp;'
-                             r'(</?(b|i|em|del|strong|span)>))'  # tags
-                             r'(\s|&nbsp;){2,4}'
-                             )
-        out_title = this_re.sub(r'\1 ', out_title)
-        out_chap = this_re.sub(r'\1 ', out_chap)
-
-        # No non-breaking space after punctuation, non-space entities
-        this_re = re.compile(r'([,.;:!?&…’”a-zA-Z0-9]|'  # literals
-                             r'(&.{3,10}(?!sp);))'  # entities not '&…sp;'
-                             r'(0xC2A0|&nbsp;)'
-                             )
-        out_title = this_re.sub(r'\1 ', out_title)
-        out_chap = this_re.sub(r'\1 ', out_chap)
-
-        # Collapse multiple newlines and leading spaces (not really necessary…)
-        this_re = re.compile(r'(\n{2,} *|\n +)')
-        out_title = this_re.sub(r'\n', out_title)
-        out_chap = this_re.sub(r'\n', out_chap)
-
-    # Un-tag 'Worm' story text in '< … >'
+    # Special case 'Worm': convert '<' and '>' around text to entities
     if PAGE_TITLE == 'Worm':
         tags_to_ident = ([('<Walk!>', '&lt;Walk!&gt;'),
                           ('<Walk or->', '&lt;Walk or-&gt;'),
@@ -320,13 +309,8 @@ def declutter_wildbow(chap_title_tag, chap_cont_tag):
                           ('-k!>', '-k!&gt;')
                           ])
         for from_tag, to_ident in tags_to_ident:
-            # noinspection PyUnboundLocalVariable
             out_chap = out_chap.replace(from_tag, to_ident)
 
-    # Add blank line between chapters
-    out_chap += '<p>&nbsp;</p>'
-
-    # noinspection PyUnboundLocalVariable
     return out_title, out_chap
 
 
@@ -400,9 +384,6 @@ def declutter_unsong(chap_title_tag, chap_cont_tag):
                          )
     out_chap = re.sub(this_re, '', out_chap)
 
-    # Add blank line between chapters
-    out_chap += '<p>&nbsp;</p>'
-
     return out_title, out_chap
 
 
@@ -437,9 +418,6 @@ def declutter_t5d(chap_title_tag, chap_cont_tag):
     out_title = this_re.sub(r'\1', out_title)
     out_chap = this_re.sub(r'\1', out_chap)
 
-    # Add blank line between chapters
-    out_chap += '<p>&nbsp;</p>'
-
     return out_title, out_chap
 
 
@@ -471,36 +449,41 @@ def declutter_sicp(chap_cont_tag, next_link):
     if next_link != '':
         out_chap = out_chap.replace('</body>', '')  # not last: no </body>
 
-    # Add blank line between chapters
-    out_chap += '<p>&nbsp;</p>'
-
     return out_chap
 
 
 def process_page(next_link, page_count, write_to_file):
     """Download & process page, repeat until no next link"""
 
+    chap_title_tag, chap_cont_tag = None, None
+    out_title, out_chap = None, None
+    prev_links = []
+
     while next_link != '':
+
+        # Store link of this page for comparison
+        prev_links.append(next_link)
 
         # Set temporary file for downloaded html
         raw_html_file = PAGE_TITLE + '-' + str(page_count) + '.html'
 
-        # Download page
+        # Download page, time of download
         down_time = download_page(next_link, raw_html_file)
 
         # Start processing time
-        proc_time = time.time()
+        proc_start_time = time.time()
 
         # Open temporary file with Beautiful Soup to process html
         soup = bs4.BeautifulSoup(open(raw_html_file, encoding='utf-8'), PARS)
 
-        # Get url of next chapter
+        # Get url of next chapter, keep last link
         next_link = find_next_link(soup)
 
         # Get tags holding headline and content
-        (chap_title_tag, chap_cont_tag) = get_wanted_content_tags(soup)
+        (chap_title_tag, chap_cont_tag)\
+            = get_wanted_content_tags(soup, chap_title_tag, chap_cont_tag)
 
-        # Get page title and clean some whitespace
+        # Get page title and clean some multiple whitespace
         if chap_title_tag is not None:
             chap_title = ''.join(chap_title_tag.get_text())
             this_re = re.compile(r'(\s|&nbsp;)+')
@@ -510,7 +493,7 @@ def process_page(next_link, page_count, write_to_file):
 
         # Check if Notes page
         if PAGE_TITLE == 'Unsong':
-            is_note = check_note(chap_title)
+            is_note = check_note(chap_title)  # is_note = False
 
         # Increment Chapter count
         page_count += 1
@@ -527,7 +510,7 @@ def process_page(next_link, page_count, write_to_file):
                            )
             print('{: >5}   {: <45}   {:.5} sec.   {:.5} sec.'
                   .format(page_count, trunc_title[:45], str(down_time),
-                          str(time.time() - proc_time)
+                          str(time.time() - proc_start_time)
                           )
                   )
 
@@ -549,7 +532,7 @@ def process_page(next_link, page_count, write_to_file):
                 else:
                     write_to_file = PAGES_FILE
 
-            if PAGE_TITLE == 'The Fifth Defiance':
+            if PAGE_TITLE == 'T5D':
                 # Remove clutter
                 (out_title, out_chap) = declutter_t5d(chap_title_tag,
                                                       chap_cont_tag)
@@ -562,7 +545,7 @@ def process_page(next_link, page_count, write_to_file):
             with open(write_to_file, 'a', encoding='UTF8') as output:
                 if TITLE_SEPARATE:
                     output.write(out_title)
-                output.write(out_chap)
+                output.write(out_chap + '<p>&nbsp;</p>\n')  # Add blank line
 
             # Delete chapter file
             os.remove(raw_html_file)
@@ -571,10 +554,12 @@ def process_page(next_link, page_count, write_to_file):
             trunc_title = (chap_title[:44] + (chap_title[44:] and '…'))
             print('{: >5}   {: <45}   {:.5} sec.   {:.5} sec.'
                   .format(page_count, trunc_title[:45], str(down_time),
-                          str(time.time() - proc_time))
+                          str(time.time() - proc_start_time))
                   )
 
         # if (page_count >= 2): next_link = ''  # Sample for testing
+        if next_link in prev_links:
+            next_link = ''
         time.sleep(WAIT_BETWEEN_REQUESTS)
 
 
@@ -582,12 +567,11 @@ def start_end_serial_download():
     """Prepare download, call downloading & processing, complete page"""
 
     # User feedback headline
-    print('Downloading \'' + PAGE_TITLE + '\' to file \'' + PAGES_FILE
-          + '\'...\nCount   Page Title                                     '
-          'Downloading   Processing'
+    print('Downloading ' + PAGE_TITLE + ' to file ' + PAGES_FILE + '...\n'
+          'Count   Page Title' + ' ' * 37 + 'Downloading   Processing'
           )
 
-    # Files to write; don't append to existing files
+    # Files to write; remove existing files
     if os.path.isfile(PAGES_FILE):
         os.remove(PAGES_FILE)
 
@@ -595,7 +579,7 @@ def start_end_serial_download():
         if os.path.isfile(NOTES_FILE):
             os.remove(NOTES_FILE)
 
-    # Initial file to append content
+    # Output file to append content
     write_to_file = PAGES_FILE
 
     # Write html opening
@@ -612,17 +596,18 @@ def start_end_serial_download():
         # Append Notes if exist; large Notes file might need too much memory
         if GET_NOTES == 'append' and os.path.isfile(NOTES_FILE):
             proc_time = time.time()  # Start processing time for appending
-            output.write(open(NOTES_FILE, 'r').read())  # all in memory. hmm...
+            output.write(open(NOTES_FILE).read())  # all in memory. hmm...
             # Delete chapter file
             os.remove(NOTES_FILE)
             # User feedback
-            print('{: >5}   {: <45}                {:.5} sec.'
+            print(('{: >5}   {: <45}' + ' ' * 16 + '{:.5} sec.')
                   .format('—', '<Appending Notes to story>'[:45],
                           str(time.time() - proc_time)
                           )
                   )
         # HTML closing
         output.write('\n</body>\n</html>')
+
     # User feedback
     print('Could not find a link to a \'Next\'/\'Next Chapter\' page.\n'
           '  Serial \'' + PAGE_TITLE + '\' complete?\n'
@@ -644,11 +629,11 @@ if __name__ == '__main__':
 #  REL_LINK_BASE  Path prefix to convert relative to absolute links
 #  WAIT_BETWEEN_REQUESTS   Time in seconds to wait between page downloads
 #  PARS           Parser used to find links, headlines, content
-#                     Available parsers, select one that works well:
-#                      'lxml' (fastest, lenient)
-#                      'html.parser' (decent speed, lenient, Python built-in)
-#                      'html5lib' (very slow, extremely lenient, parses pages
-#                         the same way a web browser does, creates valid HTML5)
+#                 Available parsers, select one that works well:
+#                 • 'lxml' (fastest, lenient)
+#                 • 'html.parser' (decent speed, lenient, Python built-in)
+#                 • 'html5lib' (very slow, extremely lenient, parses pages
+#                               like a web browser does, creates valid HTML5)
 #  print          A motto (if you like)
 #
 # 2. Set other parameters in the if-branches above:
@@ -659,19 +644,18 @@ if __name__ == '__main__':
 #
 # 3. Add argument to all appropriate '(PAGE_TITLE [in | ==]' conditions
 
+    PAGE_TITLE = ''
+
     # 'Worm'
     if len(sys.argv) > 1 and sys.argv[1] == 'Worm':
         PAGE_TITLE = sys.argv[1]
         PAGES_FILE = PAGE_TITLE + '.html'
         FIRST_LINK = 'https://parahumans.wordpress.com/2011/06/11/1-1/'
         PARS = 'lxml'
-        print('\n\n                 "'
-              'the sword devoureth one as well as modify them,'
-              '\n                  '
-              'because it allows us to ignore'
-              '\n                  '
-              'the details of the query-system implementation.'
-              '"\n                                '
+        print('\n\n' + ' ' * 17 +
+              '"the sword devoureth one as well as modify them,\n' + ' ' * 18 +
+              'because it allows us to ignore\n' + ' ' * 18 +
+              'the details of the query-system implementation."\n' + ' ' * 32 +
               '(kingjamesprogramming.tumblr.com)\n'
               )
 
@@ -681,13 +665,13 @@ if __name__ == '__main__':
         PAGES_FILE = PAGE_TITLE + '.html'
         FIRST_LINK = 'http://pactwebserial.wordpress.com/2013/12/17/bonds-1-1/'
         PARS = 'lxml'
-        print('\n\n               "'
-              'Suppose we are modeling incomplete knowledge about'
-              '\n                '
-              'the world of our forefathers, but this one brought'
-              '\n                '
-              'the horror right into our own daily life!'
-              '"\n                                 '
+        print('\n\n' + ' ' * 15 +
+              '"Suppose we are modeling incomplete knowledge about\n' +
+              ' ' * 16 +
+              'the world of our forefathers, but this one brought\n' +
+              ' ' * 16 +
+              'the horror right into our own daily life!"\n' +
+              ' ' * 33 +
               '(kingjamesprogramming.tumblr.com)\n'
               )
 
@@ -702,7 +686,6 @@ if __name__ == '__main__':
     # 'Unsong'
     if len(sys.argv) > 1 and sys.argv[1] == 'Unsong':
         PAGE_TITLE = sys.argv[1]
-        PAGES_FILE = PAGE_TITLE + '.html'
         FIRST_LINK = 'https://unsongbook.com/prologue-2/'
         PARS = 'lxml'
         GET_NOTES = 'chrono'  # Default
@@ -725,13 +708,13 @@ if __name__ == '__main__':
                 GET_NOTES = 'chrono'  # In chronological order w/story pages
                 PAGES_FILE = PAGE_TITLE + '.html'
         print('\n\n       "he instructed about the song, because he was '
-              'basically insane."\n                                     '
+              'basically insane."\n' + ' ' * 37 +
               '(kingjamesprogramming.tumblr.com)\n'
               )
 
-    # 'The Fifth Defiance'
+    # 'T5D'
     if len(sys.argv) > 1 and sys.argv[1] == 'T5D':
-        PAGE_TITLE = 'The Fifth Defiance'
+        PAGE_TITLE = 'T5D'
         PAGES_FILE = PAGE_TITLE + '.html'
         FIRST_LINK = 'https://thefifthdefiance.com/2015/11/02/introduction/'
         PARS = 'lxml'
@@ -766,8 +749,6 @@ if __name__ == '__main__':
         WAIT_BETWEEN_REQUESTS = 0
     if 'TITLE_SEPARATE' not in locals():
         TITLE_SEPARATE = True
-
-    # noinspection PyUnboundLocalVariable
     NOTES_FILE = PAGE_TITLE + '_temp.html'
 
     start_end_serial_download()
