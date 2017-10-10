@@ -17,24 +17,21 @@
 #   Wildbow (John C. McCrae)   'Worm'                                         #
 #                              'Pact'                                         #
 #                              'Twig'                                         #
-#   Scott Alexander            'Unsong' (Author’s Notes optional)             #
+#   Scott Alexander            'Unsong' (Author’s Notes optional, non-story   #
+#                               announcements/greetings omitted)              #
 #   Walter                     'The Fifth Defiance' ('T5D')                   #
 #   Abelson, Sussman, Sussman  'Structure and Interpretation of               #
-#                               Computer Programs' ('SICP') 2nd edition       #
+#                               Computer Programs', 2nd edition ('SICP')      #
 #                                                                             #
-#   Non-story remarks (announcements/greetings/etc.) on some Unsong story     #
-#   pages are omitted.                                                        #
-#                                                                             #
-#   Required:   Python 3, BeautifulSoup4,                                     #
-#   Optional:   lxml and html5lib for parser alternatives                     #
+#   Required:   Python 3, BeautifulSoup4, lxml, html5lib                      #
 #                                                                             #
 #   Usage (Arguments are case sensitive):                                     #
-#     python3 ChapterChainer.py [Pact | Twig | Worm | Unsong | T5D | SICP]    #
-#     Unsong only: Optional switches for Author's Notes and Postscript:       #
-#       [--omit | --append | --chrono[logical]]                               #
-#       '--omit' skips these pages, '--append' puts them after the story,     #
-#       and '--chronological' (or '--chrono') keeps them interspersed         #
-#       between chapters in order of publication.                             #
+#     python3 ChapterChainer.py {Pact, SICP, T5D, Twig, Unsong, Worm}         #
+#   Optional switches for Author's Notes and Postscript (Unsong only):        #
+#     [--omit | --append | --chrono[logical]]                                 #
+#     '--omit' skips the pages, '--append' puts them after the story,         #
+#     the default '--chronological' (or '--chrono') keeps them interspersed   #
+#                                 between chapters in order of publication.   #
 #                                                                             #
 #   Please donate to the authors for their writing! Using this script can     #
 #   deny them some needful income from advertising.                           #
@@ -80,7 +77,7 @@ import urllib.parse
 import urllib.request
 
 import bs4
-import html5lib  # is or may be used, ignore code inspector's complaint
+import html5lib  # is used, ignore code inspector's complaint
 import lxml  # ditto
 
 
@@ -91,12 +88,11 @@ def download_page(next_link, raw_html_file):
     down_start_time = time.time()  # Start download time
 
     # Save retrieved html to temp file
-    # Keep the 'try..'  and leave broad despite pylint complaining, in case
-    # a connection needs debugging
+    # (Keep the 'try..' and leave broad despite code inspector's complaint, in
+    # case a connection needs debugging)
     try:
         # Spoof the User-Agent, in case Python is a blacklisted agent and
-        # receives a 403. Use valid agent e.g. from
-        # https://techblog.willshouse.com/2012/01/03/most-common-user-agents/
+        # receives a 403. (Web search a list of valid user agents, pick one)
         request = urllib.request.Request(next_link, headers={
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) \
             AppleWebKit/537.36 (KHTML, like Gecko) Chrome/59.0.3071.115 \
@@ -104,12 +100,11 @@ def download_page(next_link, raw_html_file):
         with urllib.request.urlopen(request) as response:
             with open(raw_html_file, 'wb') as out_file:
                 shutil.copyfileobj(response, out_file)
-    except Exception as inst:
+    except Exception as this_exception:  # debug info & exit
         print('\nCould not retrieve next page. Is this link broken?\n\'' +
               next_link + '\'\n\n')
-        print(type(inst))   # exception instance
-        print(inst.args)    # arguments stored in .args
-        print(inst)         # __str__ allows args to be printed directly
+        print(type(this_exception))
+        print(this_exception)
         sys.exit()          # stop gracefully
 
     return str(time.time() - down_start_time)  # Download time
@@ -593,10 +588,12 @@ def start_end_serial_download():
 
     # Append Notes and closing
     with open(PAGES_FILE, 'a', encoding='UTF8') as output:
-        # Append Notes if exist; large Notes file might need too much memory
+
+        # Append Notes if exist
         if GET_NOTES == 'append' and os.path.isfile(NOTES_FILE):
             proc_time = time.time()  # Start processing time for appending
-            output.write(open(NOTES_FILE).read())  # all in memory. hmm...
+            for this_line in open(NOTES_FILE):  # only 1 line in memory
+                output.write(this_line)
             # Delete chapter file
             os.remove(NOTES_FILE)
             # User feedback
@@ -605,6 +602,7 @@ def start_end_serial_download():
                           str(time.time() - proc_time)
                           )
                   )
+
         # HTML closing
         output.write('\n</body>\n</html>')
 
@@ -619,30 +617,32 @@ def start_end_serial_download():
 if __name__ == '__main__':
     """Set serial-specific parameters, initialize variables."""
 
-# For a new serial download source:
-# 1. Add another 'if'-block and set parameters:
-#  sys.argv[1]    Command line argument that determines serial to download
-#  GET_NOTES      Options for some serials
-#  PAGE_TITLE     Script argument determining serial to download
-#  PAGES_FILE     File name of resulting HTML file
-#  FIRST_LINK     URL of serial's first page
-#  REL_LINK_BASE  Path prefix to convert relative to absolute links
-#  WAIT_BETWEEN_REQUESTS   Time in seconds to wait between page downloads
-#  PARS           Parser used to find links, headlines, content
-#                 Available parsers, select one that works well:
-#                 • 'lxml' (fastest, lenient)
-#                 • 'html.parser' (decent speed, lenient, Python built-in)
-#                 • 'html5lib' (very slow, extremely lenient, parses pages
-#                               like a web browser does, creates valid HTML5)
-#  print          A motto (if you like)
-#
-# 2. Set other parameters in the if-branches above:
-#  Parameters that define a link to the next page
-#  soup_headline  defines the page headline
-#  soup_content   Tag that defines the page content
-#  Unwanted clutter to decompose
-#
-# 3. Add argument to all appropriate '(PAGE_TITLE [in | ==]' conditions
+    """
+    For a new serial download source:
+    1. Add another 'if'-block and set parameters:
+     sys.argv[1]       Command line argument that determines serial to download
+     GET_NOTES         Options for some serials0
+     PAGE_TITLE        Script argument determining serial to download
+     PAGES_FILE        File name of resulting HTML file
+     FIRST_LINK        URL of serial's first page
+     REL_LINK_BASE     Path prefix to convert relative to absolute links
+     WAIT_BETWEEN_REQUESTS      Time in seconds to wait between page downloads
+     PARS              Parser used to find links, headlines, content
+                       Available parsers, select one that works well:
+                       • 'lxml' (fastest, lenient)
+                       • 'html.parser' (decent speed, lenient, Python built-in)
+                       • 'html5lib' (very slow, extremely lenient, parses pages
+                                  like a web browser does, creates valid HTML5)
+     print             A motto (if you like)
+    
+    2. Set other parameters in the if-branches above:
+     Parameters that define a link to the next page
+     soup_headline  defines the page headline
+     soup_content   Tag that defines the page content
+     Unwanted clutter to decompose
+    
+    3. Add argument to all appropriate '(PAGE_TITLE [in | ==]' conditions
+    """
 
     PAGE_TITLE = ''
 
@@ -688,16 +688,9 @@ if __name__ == '__main__':
         PAGE_TITLE = sys.argv[1]
         FIRST_LINK = 'https://unsongbook.com/prologue-2/'
         PARS = 'lxml'
-        GET_NOTES = 'chrono'  # Default
+        GET_NOTES = 'chrono'  # Default: chronological order w/story pages
+        PAGES_FILE = PAGE_TITLE + '.html'  # Default
         if len(sys.argv) == 3:
-            if sys.argv[2] not in ('--omit', '--append', '--chronological',
-                                   '--chrono'
-                                   ):
-                print('\nOptions for Unsong incorrectly stated.\n'
-                      'Usage: python3 Book_worm.py Unsong '
-                      '[--omit|--append|--chrono[logical]]\n'
-                      )
-                sys.exit()
             if sys.argv[2] == '--omit' or sys.argv[2] is None:
                 GET_NOTES = 'omit'  # None
                 PAGES_FILE = PAGE_TITLE + '-Notes_omitted.html'
@@ -705,7 +698,7 @@ if __name__ == '__main__':
                 GET_NOTES = 'append'  # Copy after story end
                 PAGES_FILE = PAGE_TITLE + '-Notes_appended.html'
             if sys.argv[2] in ('--chronological', '--chrono'):
-                GET_NOTES = 'chrono'  # In chronological order w/story pages
+                GET_NOTES = 'chrono'
                 PAGES_FILE = PAGE_TITLE + '.html'
         print('\n\n       "he instructed about the song, because he was '
               'basically insane."\n' + ' ' * 37 +
@@ -730,15 +723,26 @@ if __name__ == '__main__':
         TITLE_SEPARATE = False  # all we want is in <body> tag
         PARS = 'html5lib'  # the others don't handle this html style well
 
-    # Check for correct argument (serial, options)
-    if len(sys.argv) <= 1 or (sys.argv[1]
-                              not in ('Worm', 'Pact', 'Twig', 'Unsong', 'T5D',
-                                      'SICP')):
-        print('\n_serial to download not or incorrectly stated.\n'
-              'Usage: python3 Book_worm.py '
-              '[Pact | Twig | Worm | Unsong | SICP]\n'
+    # Check for correct arguments for serial and options
+    if len(sys.argv) <= 1 or sys.argv[1] not in \
+            ('Worm', 'Pact', 'Twig', 'Unsong', 'T5D', 'SICP'):
+        print('\nSerial to download not or incorrectly stated.\n'
+              'Usage:\nChapterChainer.py {Pact, SICP, T5D, Twig, '
+              'Unsong [--append | --chrono[logical] | --omit], Worm}\n'
               )
         sys.exit()
+
+    if sys.argv[1] == 'Unsong':
+        if len(sys.argv) == 2:
+            print('\nDefaulting to --chronological\n')
+        else:
+            if sys.argv[2] not in \
+                    ('--omit', '--append', '--chronological', '--chrono'):
+                print('\nOptions for Notes pages incorrectly stated.\n'
+                      'Usage:\nChapterChainer.py {Pact, SICP, T5D, Twig, '
+                      'Unsong [--append | --chrono[logical] | --omit], Worm}\n'
+                      )
+                sys.exit()
 
     START_TIME = time.time()  # For total time
 
