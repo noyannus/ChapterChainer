@@ -12,26 +12,38 @@
 #   to make adding new serials fairly easy. Non-story pages (such as          #
 #   'Author's Notes') can optionally be skipped or appended to the story.     #
 #                                                                             #
+#                                                                             #
 #   Currently built-in serials are:                                           #
 #                                                                             #
 #   Wildbow (John C. McCrae)   'Worm'                                         #
 #                              'Pact'                                         #
 #                              'Twig'                                         #
 #   Scott Alexander            'Unsong' (Author’s Notes optional, non-story   #
-#                               announcements/greetings omitted)              #
+#                                        announcements/greetings omitted)     #
 #   Walter                     'The Fifth Defiance' ('T5D')                   #
-#   Abelson, Sussman, Sussman  'Structure and Interpretation of               #
-#                               Computer Programs', 2nd edition ('SICP')      #
+#   Abelson, Sussman, Sussman  'Structure and Interpretation of Computer      #
+#                               Programs', 2nd edition ('SICP')               #
+#                                                                             #
 #                                                                             #
 #   Required:   Python 3, BeautifulSoup4, lxml, html5lib                      #
 #                                                                             #
-#   Usage (Arguments are case sensitive):                                     #
-#     python3 ChapterChainer.py {Pact, SICP, T5D, Twig, Unsong, Worm}         #
-#   Optional switches for Author's Notes and Postscript (Unsong only):        #
-#     [--omit | --append | --chrono[logical]]                                 #
-#     '--omit' skips the pages, '--append' puts them after the story,         #
-#     the default '--chronological' (or '--chrono') keeps them interspersed   #
-#                                 between chapters in order of publication.   #
+#                                                                             #
+#   Usage:                                                                    #
+#   Invoke the script with one of the title shortcuts, and one of the         #
+#   switches if applicable. All are case sensitive:                           #
+#                                                                             #
+#   python3 ChapterChainer.py {Pact, SICP, T5D, Twig, Unsong, Worm}           #
+#                                                                             #
+#   Optional switches for Author's Notes and Postscript: '--omit' skips these #
+#   pages, '--append' collects and puts them after the story, the default     #
+#   '--chronological' (or '--chrono') keeps them interspersed between         #
+#   chapters in order of publication. Currenly for 'Unsong' only.             #
+#                                                                             #
+#   [--omit | --append | --chrono[logical]]                                   #
+#                                                                             #
+#   Example: 'ChapterChainer.py Unsong --omit' downloads 'Unsong'             #
+#            without the non-story pages to the working directory.            #
+#                                                                             #
 #                                                                             #
 #   Please donate to the authors for their writing! Using this script can     #
 #   deny them some needful income from advertising.                           #
