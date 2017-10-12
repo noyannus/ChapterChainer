@@ -18,37 +18,29 @@ Currently built-in serials are:
   * [*Worm*](https://parahumans.wordpress.com/)
   * [*Pact*](https://pactwebserial.wordpress.com/)
   * [*Twig*](https://twigserial.wordpress.com/) (as published so far)
-* Scott Alexander: [*Unsong*](http://unsongbook.com/) (Author’s Notes optional)
+* Scott Alexander: [*Unsong*](http://unsongbook.com/) (Author’s Notes optional, non-story announcements/greetings omitted)
 * Walter: [*The Fifth Defiance*](https://thefifthdefiance.com/about/) ('T5D') (as published so far)
 * Abelson, Sussman, Sussman: [Structure and Interpretation of Computer 
 Programs](https://mitpress.mit.edu/sicp/full-text/book/book.html) ('SICP') 2nd edition
 
-Non-story remarks (announcements/greetings/etc.) on some Unsong story pages are omitted. 
-
 ### Required
 
 Python 3,
-[BeautifulSoup4](http://www.crummy.com/software/BeautifulSoup/Download)
-
-### Optional
-
-Alternatives to built-in html parser:
-
-[lxml](https://pypi.python.org/pypi/lxml), [html5lib](https://github.com/html5lib/html5lib-python)
+[BeautifulSoup4](http://www.crummy.com/software/BeautifulSoup/Download), [lxml](https://pypi.python.org/pypi/lxml), [html5lib](https://github.com/html5lib/html5lib-python)
 
 ### Usage
 
-Arguments are case sensitive
+Invoke the script with one of the title shortcuts, and one of the switches if applicable. All are case sensitive.
 
-`python3 ChapterChainer.py [Pact | Twig | Worm | Unsong | T5D | SICP]`
+`ChapterChainer.py {Pact, SICP, T5D, Twig, Unsong, Worm}`
 
-Unsong only: Optional switches for Author's Notes and Postscript:
+Options for Author's Notes and Postscript (Unsong only):
 
-`[--omit | --append | --chrono[logical]]`
+`[--append | --chrono[logical] | --omit]`
 
-`--omit` skips these pages, `--append` puts them after the story, and `--chronological` (or `--chrono`) leaves them interspersed between chapters in order of publication. 
+`--omit` skips these pages, `--append` collects and puts them after the story, and `--chronological` (or `--chrono`) leaves them interspersed between chapters in order of publication. 
 
-Arguments are case sensitive.
+Example: `ChapterChainer.py Unsong --omit` downloads Unsong without Author's Notes pages to the working directory.
 
 ### Known Issues
 
