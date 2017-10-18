@@ -17,7 +17,7 @@ Currently built-in serials are:
 * Wildbow (John C. McCrae):
   * [*Worm*](https://parahumans.wordpress.com/)
   * [*Pact*](https://pactwebserial.wordpress.com/)
-  * [*Twig*](https://twigserial.wordpress.com/) (as published so far)
+  * [*Twig*](https://twigserial.wordpress.com/)
 * Scott Alexander: [*Unsong*](http://unsongbook.com/) (Author’s Notes optional, non-story announcements/greetings omitted)
 * Walter: [*The Fifth Defiance*](https://thefifthdefiance.com/about/) ('T5D') (as published so far)
 * Abelson, Sussman, Sussman: [Structure and Interpretation of Computer 
@@ -44,7 +44,9 @@ Example: `ChapterChainer.py Unsong --omit` downloads Unsong without Author's Not
 
 ### Known Issues
 
-Pages not published at the time of this script update may not be found if the 'Next' link has been changed.
+Pages not published at the time of this script update may not be found if the 'Next' link has been changed. 
+
+The 'End' link from 'Twig' to Wildbow's Blog is not followed.
 
 ### Social and Legal
 
