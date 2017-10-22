@@ -663,7 +663,7 @@ def start_end_serial_download():
           '  Serial \'' + PAGE_TITLE + '\' complete?\n'
           '  Total time: {:.5} sec.'
           .format(time.time() - START_TIME) + '\n'  # total time
-7          )
+          )
 
 
 if __name__ == '__main__':
