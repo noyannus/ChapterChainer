@@ -18,10 +18,11 @@ Currently built-in serials are:
   * [*Worm*](https://parahumans.wordpress.com/)
   * [*Pact*](https://pactwebserial.wordpress.com/)
   * [*Twig*](https://twigserial.wordpress.com/)
+  * [*Glow-worm*](https://parahumans.wordpress.com/2017/10/21/glowworm-p-1/) ('Glowo')
 * Scott Alexander: [*Unsong*](http://unsongbook.com/) (Author’s Notes optional, non-story announcements/greetings omitted)
-* Walter: [*The Fifth Defiance*](https://thefifthdefiance.com/about/) ('T5D') (as published so far)
+* Walter: [*The Fifth Defiance*](https://thefifthdefiance.com/about/) ('T5D')
 * Abelson, Sussman, Sussman: [Structure and Interpretation of Computer 
-Programs](https://mitpress.mit.edu/sicp/full-text/book/book.html) ('SICP') 2nd edition
+Programs](https://mitpress.mit.edu/sicp/full-text/book/book.html), 2nd edition ('SICP')
 
 ### Required
 
@@ -30,46 +31,53 @@ Python 3,
 
 ### Usage
 
-Invoke the script with one of the title shortcuts, and one of the switches if applicable. All are case sensitive.
+Invoke the script with one of the titles or its (abbreviation), and one of the switches if applicable. All are *case sensitive*:
 
-`ChapterChainer.py {Pact, SICP, T5D, Twig, Unsong, Worm}`
+`ChapterChainer.py {Glowo, Pact, SICP, T5D, Twig, Unsong, Worm}`
 
-Options for Author's Notes and Postscript (Unsong only):
+Optional switches for Author's Notes and Postscript (currently for *'Unsong' only*): 
 
-`[--append | --chrono[logical] | --omit]`
+  `[--omit | --append | --chrono[logical]]`
+ 
+ `--omit` skips these pages, `--append` collects and puts them after the story, the default `--chronological` (or `--chrono`) keeps them interspersed between chapters in order of publication.
 
-`--omit` skips these pages, `--append` collects and puts them after the story, and `--chronological` (or `--chrono`) leaves them interspersed between chapters in order of publication. 
+Examples:
 
-Example: `ChapterChainer.py Unsong --omit` downloads Unsong without Author's Notes pages to the working directory.
+`ChapterChainer.py Unsong --omit` downloads Unsong without the non-story pages to the working directory.
+
+`ChapterChainer.py Glowo` downloads 'Glow-worm' to the working directory. 
 
 ### Known Issues
 
 Pages not published at the time of this script update may not be found if the 'Next' link has been changed. 
 
-The 'End' link from 'Twig' to Wildbow's Blog is not followed.
+Links from a story to epilogue, afterword, author's blog, next story, etc. are not followed.
 
 ### Social and Legal
 
 _Please donate to the authors for their writing!_ Using this script can deny them some needful income from advertising. Easy donation options are on their sites.
 And you can _vote daily on topwebfiction.com_ if you enjoy reading.
 
-* Worm:
-  * https://parahumans.wordpress.com/
-  * http://topwebfiction.com/vote.php?for=worm
+* Glow-worm:
+  * https://parahumans.wordpress.com/ (no own donation link)
+  * (no topwebfiction page so far)
 * Pact:
   * https://pactwebserial.wordpress.com/
   * http://topwebfiction.com/vote.php?for=pact
+* Structure and Interpretation of Computer Programs:
+  * ???
+* The Fifth Defiance:
+  * ???
+  * http://topwebfiction.com/vote.php?for=the-fifth-defiance
 * Twig:
   * https://twigserial.wordpress.com/
   * http://topwebfiction.com/vote.php?for=twig
 * Unsong:
   * Patreon link on http://slatestarcodex.com/
   * http://topwebfiction.com/vote.php?for=unsong
-* The Fifth Defiance:
-  * ???
-  * http://topwebfiction.com/vote.php?for=the-fifth-defiance
-* Structure and Interpretation of Computer Programs:
-  * ???
+* Worm:
+  * https://parahumans.wordpress.com/
+  * http://topwebfiction.com/vote.php?for=worm
 
 _This script must not be used to publish a serial without its author's permission._ (This would severely curtail their chances to sell the manuscript, and with no money to make they may give up writing for the web altogether. Also, few could afford the punitive damage for a lost film series deal of something big like 'Worm'. Sorry for the moralizing.) 
 
