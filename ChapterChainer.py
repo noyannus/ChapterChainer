@@ -710,11 +710,11 @@ if __name__ == '__main__':
         PARS = 'lxml'
     # 'SICP' (Structure and Interpretation of Computer Programs)
     elif len(sys.argv) > 1 and sys.argv[1] == 'SICP':
-        PAGE_TITLE = 'StructInterprCompProg'
+        PAGE_TITLE = 'Structure and Interpretation of Computer Programs'
+        PAGES_FILE = 'StructInterprCompProg.html'
         FIRST_LINK = ('https://mitpress.mit.edu/'
                       'sicp/full-text/book/book.html')
         REL_LINK_BASE = 'https://mitpress.mit.edu/sicp/full-text/book/'
-        #        WAIT_BETWEEN_REQUESTS = 0
         TITLE_SEPARATE = False  # header and chapter are the same tag
         PARS = 'html5lib'  # the others don't handle this html style well
     # 'T5D'
@@ -749,9 +749,7 @@ if __name__ == '__main__':
         PAGE_TITLE = 'Worm'
         FIRST_LINK = 'https://parahumans.wordpress.com/2011/06/11/1-1/'
         PARS = 'lxml'
-    # Check for correct arguments for serial
-    # if len(sys.argv) <= 1 or sys.argv[1] not in \
-    #         ('Glowo', 'Pact', 'SICP', 'T5D', 'Twig', 'Unsong', 'Worm'):
+    # No correct arguments for serial selection were stated
     else:
         print('\nSerial to download not or incorrectly stated.\n'
               'Usage:\nChapterChainer.py {Glowo, Pact, SICP, T5D, Twig, '
