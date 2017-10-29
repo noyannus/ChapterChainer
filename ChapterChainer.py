@@ -289,8 +289,8 @@ def declutter_wildbow(chap_title_tag, chap_cont_tag):
 
     # # HTML string
     # Tags to html string
-    out_title = html.unescape(str(chap_title_tag))
-    out_chap = html.unescape(str(chap_cont_tag))
+    out_title = str(chap_title_tag)
+    out_chap = str(chap_cont_tag)
 
     # Standardize several kinds of breaks to newline
     out_chap = '\n'.join(out_chap.splitlines())  # misses '0x2028' - bug?
@@ -327,16 +327,12 @@ def declutter_wildbow(chap_title_tag, chap_cont_tag):
     out_title = this_re.sub(r'\n', out_title)
     out_chap = this_re.sub(r'\n', out_chap)
 
-    # # Special case 'Worm': convert '<' and '>' around text to entities
-    if WHICH_SERIAL == 'Worm':
-        tags_to_ident = ([('<Walk!>', '&lt;Walk!&gt;'),
-                          ('<Walk or->', '&lt;Walk or-&gt;'),
-                          ('<Faster!>', '&lt;Faster!&gt;'),
-                          ('<Wal-', '&lt;Wal-'),
-                          ('-k!>', '-k!&gt;')
-                          ])
-        for from_tag, to_ident in tags_to_ident:
-            out_chap = out_chap.replace(from_tag, to_ident)
+    # # Special case 'Glow-worm': Unusual navigation lines
+    if WHICH_SERIAL == 'Glowo':
+        this_re = re.compile(r'>\n?(Last Chapter)?'
+                             r'(\s|&nbsp;){40,}'
+                             r'(Next Chapter)?\n?<')
+        out_chap = this_re.sub(r'><', out_chap)
 
     return out_title, out_chap
 
@@ -355,8 +351,11 @@ def declutter_unsong(chap_title_tag, chap_cont_tag):
         i.decompose()
 
     # Tags to html string
-    out_title = html.unescape(str(chap_title_tag))
-    out_chap = html.unescape(str(chap_cont_tag))
+    # out_title = html.unescape(str(chap_title_tag))
+    # out_chap = html.unescape(str(chap_cont_tag))
+    # Tags to html string
+    out_title = str(chap_title_tag)
+    out_chap = str(chap_cont_tag)
 
     # 'End of Book…' Season's greetings
     this_re = re.compile(r'(<hr/>\n<p></p><center><b>End of Book [^<]+)'
@@ -425,9 +424,13 @@ def declutter_t5d(chap_title_tag, chap_cont_tag):
                                  'jetpack-likes-widget-wrapper '
                                  'jetpack-likes-widget-unloaded'}).decompose()
 
+    # # Tags to html string
+    # out_title = html.unescape(str(chap_title_tag))
+    # out_chap = html.unescape(str(chap_cont_tag))
     # Tags to html string
-    out_title = html.unescape(str(chap_title_tag))
-    out_chap = html.unescape(str(chap_cont_tag))
+    out_title = str(chap_title_tag)
+    out_chap = str(chap_cont_tag)
+
 
     # Collapse 2 to 4 whitespace after punctuation, non-space entities,
     # tags that format rendered text
@@ -471,8 +474,11 @@ def declutter_sicp(chap_cont_tag, next_link):
         if not link_tag.get('src').startswith('http'):  # relative
             link_tag['src'] = REL_LINK_BASE + link_tag['src']
 
+    # # Tags to html string
+    # out_chap = html.unescape(str(chap_cont_tag))
     # Tags to html string
-    out_chap = html.unescape(str(chap_cont_tag))
+    out_chap = str(chap_cont_tag)
+
 
     # No …</body><body>… at page borders
     if next_link != ('https://mitpress.mit.edu/'
@@ -702,7 +708,7 @@ if __name__ == '__main__':
     if len(sys.argv) > 1 and sys.argv[1] == 'Glowo':
         PAGE_TITLE = 'Glow-worm'
         FIRST_LINK = 'https://parahumans.wordpress.com/2017/10/21/glowworm-p-1/'
-        PARS = 'lxml'
+        PARS = 'html5lib'  # the others don't handle this html style well
     # 'Pact'
     elif len(sys.argv) > 1 and sys.argv[1] == 'Pact':
         PAGE_TITLE = 'Pact'
