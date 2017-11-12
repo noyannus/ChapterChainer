@@ -8,22 +8,21 @@
 
 # ChapterChainer
 
-This script downloads serial web pages. It follows the *Next* or *Next Chapter* link of each page (no 'Table of Contents' page is required), does some formatting and cleanup of the retrieved html, and outputs all chapters to one large HTML file. 
+This script downloads serial web pages. It follows the *Next* or *Next Chapter* link of each page, does some formatting and cleanup of the retrieved html, and outputs all chapters to one large HTML file -- no 'Table of Contents' page is required. 
 
 ChapterChainer is heavily commented and uses descriptive variable names to make adding new serials fairly easy. Non-story pages (such as 'Author's Notes') can optionally be skipped or appended to the story.
 
 Currently built-in serials are:
 
-* Abelson, Sussman & Sussman: [*Structure and Interpretation of Computer 
-Programs*](https://mitpress.mit.edu/sicp/full-text/book/book.html), 2nd edition ('SICP')
-* Alexander, Scott: [*Unsong*](http://unsongbook.com/) (Author’s Notes optional, non-story announcements/greetings omitted)
-* Walter: [*The Fifth Defiance*](https://thefifthdefiance.com/about/) ('T5D')
-* Wildbow (John Charles McCrae):
-  * [*Glow-worm*](https://parahumans.wordpress.com/2017/10/21/glowworm-p-1/) ('Glowo')
+* Wildbow (John C. McCrae):
+  * [*Worm*](https://parahumans.wordpress.com/)
   * [*Pact*](https://pactwebserial.wordpress.com/)
   * [*Twig*](https://twigserial.wordpress.com/)
-  * [*Ward*](https://www.parahumans.net/)
-  * [*Worm*](https://parahumans.wordpress.com/)
+  * [*Glow-worm*](https://parahumans.wordpress.com/2017/10/21/glowworm-p-1/) ('Glowo')
+* Scott Alexander: [*Unsong*](http://unsongbook.com/) (Author’s Notes optional, non-story announcements/greetings omitted)
+* Walter: [*The Fifth Defiance*](https://thefifthdefiance.com/about/) ('T5D')
+* Abelson, Sussman, Sussman: [Structure and Interpretation of Computer 
+Programs](https://mitpress.mit.edu/sicp/full-text/book/book.html), 2nd edition ('SICP')
 
 ### Required
 
@@ -32,9 +31,9 @@ Python 3,
 
 ### Usage
 
-Invoke the script with one of the titles, and one of the switches if applicable. Use the abbreviations where listed above. All arguments are *case sensitive*:
+Invoke the script with one of the titles or its (abbreviation), and one of the switches if applicable. All are *case sensitive*:
 
-`ChapterChainer.py {Glowo, Pact, SICP, T5D, Twig, Unsong, Ward, Worm}`
+`ChapterChainer.py {Glowo, Pact, SICP, T5D, Twig, Unsong, Worm}`
 
 Optional switches for Author's Notes and Postscript (currently for *'Unsong' only*): 
 
@@ -60,8 +59,8 @@ _Please donate to the authors for their writing!_ Using this script can deny the
 And you can _vote daily on topwebfiction.com_ if you enjoy reading.
 
 * Glow-worm:
-  * https://parahumans.wordpress.com/
-  * (not listed in topwebfiction so far)
+  * https://parahumans.wordpress.com/ (no own donation link)
+  * (no topwebfiction page so far)
 * Pact:
   * https://pactwebserial.wordpress.com/
   * http://topwebfiction.com/vote.php?for=pact
@@ -74,11 +73,8 @@ And you can _vote daily on topwebfiction.com_ if you enjoy reading.
   * https://twigserial.wordpress.com/
   * http://topwebfiction.com/vote.php?for=twig
 * Unsong:
-  * http://slatestarcodex.com/ (no own donation link for the serial)
+  * Patreon link on http://slatestarcodex.com/
   * http://topwebfiction.com/vote.php?for=unsong
-* Ward:
-  * https://www.parahumans.net/
-  * (not listed in topwebfiction so far)
 * Worm:
   * https://parahumans.wordpress.com/
   * http://topwebfiction.com/vote.php?for=worm

@@ -4,9 +4,9 @@
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 #                                                                             #
 #   This script downloads serial web pages. It follows the 'Next' or 'Next    #
-#   Chapter' link of each page (no 'Table of Contents' page is required),     #
-#   does some formatting and cleanup of the retrieved html, and outputs all   #
-#   chapters to one large HTML file.                                          #
+#   Chapter' link of each page, does some formatting and cleanup of the       #
+#   retrieved html, and outputs all chapters to one large HTML file -- no     #
+#   'Table of Contents' page is required.                                     #
 #                                                                             #
 #   ChapterChainer is heavily commented and uses descriptive variable names   #
 #   to make adding new serials fairly easy. Non-story pages (such as          #
@@ -15,28 +15,25 @@
 #                                                                             #
 #   Currently built-in serials are:                                           #
 #                                                                             #
-#   Abelson, Sussman & Sussman  'Structure and Interpretation of Computer     #
-#                               Programs', 2nd edition ('SICP')               #
-#   Alexander, Scott           'Unsong' (Author’s Notes optional, non-story   #
-#                                        announcements/greetings omitted)     #
-#   Walter                     'The Fifth Defiance' ('T5D')                   #
-#   Wildbow (John C. McCrae)   'Glow-worm' ('Glowo')                          #
+#   Wildbow (John C. McCrae)   'Worm'                                         #
 #                              'Pact'                                         #
 #                              'Twig'                                         #
-#                              'Ward'                                         #
-#                              'Worm'                                         #
+#                              'Glow-worm' ('Glowo')                          #
+#   Scott Alexander            'Unsong' (Author’s Notes optional, non-story   #
+#                                        announcements/greetings omitted)     #
+#   Walter                     'The Fifth Defiance' ('T5D')                   #
+#   Abelson, Sussman, Sussman  'Structure and Interpretation of Computer      #
+#                               Programs', 2nd edition ('SICP')               #
 #                                                                             #
 #                                                                             #
 #   Required:   Python 3, BeautifulSoup4, lxml, html5lib                      #
 #                                                                             #
 #                                                                             #
 #   Usage:                                                                    #
-#   Invoke the script with one of the titles, and one of the switches if      #
-#   applicable. Use the abbreviations where listed above.                     #
-#   All arguments are case sensitive:                                         #
+#   Invoke the script with one of the titles or its (abbreviation), and one   #
+#   of the switches if applicable. All are case sensitive:                    #
 #                                                                             #
-#   python3 ChapterChainer.py {Glowo, Pact, SICP, T5D, Twig, Unsong,          #
-#                              Ward, Worm}                                    #
+#   python3 ChapterChainer.py {Glowo, Pact, SICP, T5D, Twig, Unsong, Worm}    #
 #                                                                             #
 #   Optional switches for Author's Notes and Postscript; currently only for   #
 #   'Unsong':                                                                 #
@@ -67,8 +64,8 @@
 #   share, like, and comment (high added value from audience sometimes!)      #
 #   And you can vote daily on topwebfiction.com if you enjoy reading.         #
 #                                                                             #
-#       Glow-worm: https://parahumans.wordpress.com/                          #
-#                (not listed in topwebfiction so far)                         #
+#       Glow-worm: https://parahumans.wordpress.com/ (no own donation link)   #
+#                (no topwebfiction page so far)                               #
 #       Pact:    https://pactwebserial.wordpress.com/                         #
 #                http://topwebfiction.com/vote.php?for=pact                   #
 #       Structure and Interpretation of Computer Programs: ???                #
@@ -78,8 +75,6 @@
 #                http://topwebfiction.com/vote.php?for=twig                   #
 #       Unsong:  Patreon link on http://slatestarcodex.com/                   #
 #                http://topwebfiction.com/vote.php?for=unsong                 #
-#       Ward:    https://www.parahumans.net/                                  #
-#                (not listed in topwebfiction so far)                         #
 #       Worm:    https://parahumans.wordpress.com/                            #
 #                http://topwebfiction.com/vote.php?for=worm                   #
 #                                                                             #
@@ -100,6 +95,7 @@
 """
 
 
+import html
 import os
 import os.path
 import re
@@ -111,7 +107,7 @@ import urllib.request
 
 import bs4
 import html5lib  # is used, ignore code inspector's complaint
-import lxml  # is used, ignore code inspector's complaint
+import lxml  # ditto
 
 
 def download_page(next_link, raw_html_file):
@@ -144,13 +140,12 @@ def download_page(next_link, raw_html_file):
 
 
 def find_next_link(soup):
-    """Identify and return a link to the next page"""
+    """Return a link to the next page"""
 
     maybe_link = None
 
-    # 'Pact', 'Twig', 'Unsong', 'Ward', 'Worm': various link texts
-    if WHICH_SERIAL in ('Glowo', 'Pact', 'T5D', 'Twig', 'Unsong',
-                        'Ward', 'Worm'):
+    # 'Worm', 'Pact', 'Twig', 'Unsong': various link texts
+    if WHICH_SERIAL in ('Glowo', 'Pact', 'T5D', 'Twig', 'Unsong', 'Worm'):
         if soup.find('a', {'rel': 'next'}) is not None:  # find by 'rel'='next'
             maybe_link = soup.find('a', {'rel': 'next'})['href']
         else:  # find by link text
@@ -182,11 +177,11 @@ def find_next_link(soup):
 #        if (next_link == 'Broken_link'):
 #            next_link = 'Working_link'
 
-    # Broken URL in Twig 8.3
-    if next_link == ('//twigserial.wordpress.com/'
-                     '2015/12/17/bleeding-edge-8-4/'):
-        next_link = ('https://twigserial.wordpress.com/'
-                     '2015/12/17/bleeding-edge-8-4/')
+        # Broken URL in Twig 8.3
+        if next_link == ('//twigserial.wordpress.com/'
+                         '2015/12/17/bleeding-edge-8-4/'):
+            next_link = ('https://twigserial.wordpress.com/'
+                         '2015/12/17/bleeding-edge-8-4/')
 
     return next_link
 
@@ -195,7 +190,7 @@ def get_wanted_content_tags(soup, chap_title_tag, chap_cont_tag):
     """Get tags that hold headline and wanted content"""
 
     # 'Glowo', 'Pact', 'T5D', 'Twig', 'Worm'
-    if WHICH_SERIAL in ('Glowo', 'Pact', 'T5D', 'Twig', 'Ward', 'Worm'):
+    if WHICH_SERIAL in ('Glowo', 'Pact', 'T5D', 'Twig', 'Worm'):
         chap_title_tag = soup.find('h1', {'class': 'entry-title'})
         chap_cont_tag = soup.find('div', {'class': 'entry-content'})
 
@@ -258,7 +253,7 @@ def declutter_wildbow(chap_title_tag, chap_cont_tag):
                                         ):
             i.decompose()
 
-    # # Tags -- All: 'Glowo', 'Pact', 'Twig', 'Ward', 'Worm'
+    # # Tags -- All: 'Glowo', 'Pact', 'Twig', 'Worm'
     # Navigation links
     this_re = re.compile(r'(\s|&nbsp;)*'
                          r'(Previous|Next|L?ast|About|'
@@ -356,6 +351,9 @@ def declutter_unsong(chap_title_tag, chap_cont_tag):
         i.decompose()
 
     # Tags to html string
+    # out_title = html.unescape(str(chap_title_tag))
+    # out_chap = html.unescape(str(chap_cont_tag))
+    # Tags to html string
     out_title = str(chap_title_tag)
     out_chap = str(chap_cont_tag)
 
@@ -426,9 +424,13 @@ def declutter_t5d(chap_title_tag, chap_cont_tag):
                                  'jetpack-likes-widget-wrapper '
                                  'jetpack-likes-widget-unloaded'}).decompose()
 
+    # # Tags to html string
+    # out_title = html.unescape(str(chap_title_tag))
+    # out_chap = html.unescape(str(chap_cont_tag))
     # Tags to html string
     out_title = str(chap_title_tag)
     out_chap = str(chap_cont_tag)
+
 
     # Collapse 2 to 4 whitespace after punctuation, non-space entities,
     # tags that format rendered text
@@ -472,8 +474,11 @@ def declutter_sicp(chap_cont_tag, next_link):
         if not link_tag.get('src').startswith('http'):  # relative
             link_tag['src'] = REL_LINK_BASE + link_tag['src']
 
+    # # Tags to html string
+    # out_chap = html.unescape(str(chap_cont_tag))
     # Tags to html string
     out_chap = str(chap_cont_tag)
+
 
     # No …</body><body>… at page borders
     if next_link != ('https://mitpress.mit.edu/'
@@ -549,7 +554,7 @@ def process_page(next_link, page_count, write_to_file):
 
         else:
             # Process page content, one def per html style
-            if WHICH_SERIAL in ('Glowo', 'Pact', 'Twig', 'Ward', 'Worm'):
+            if WHICH_SERIAL in ('Glowo', 'Pact', 'Twig', 'Worm'):
                 # Remove clutter
                 (out_title, out_chap) = declutter_wildbow(chap_title_tag,
                                                           chap_cont_tag)
@@ -600,9 +605,7 @@ def process_page(next_link, page_count, write_to_file):
                              'https://wildbow.wordpress.com/'  # 'Twig'
                              '2017/10/17/an-end-to-the-twig-experiment/',
                              'https://parahumans.wordpress.com/'  # 'Worm'
-                             '2015/03/10/moving-on/',
-                             'https://parahumans.wordpress.com/'  # 'Glow-worm'
-                             '2017/11/11/glow-worm-p-10-sequel-is-live/'
+                             '2015/03/10/moving-on/'
                              ]:
                 next_link = ''
 
@@ -662,11 +665,9 @@ def start_end_serial_download():
         output.write('\n</body>\n</html>')
 
     # User feedback
-    print('Serial \'' + PAGE_TITLE + '\' complete?\n'
-          'Could not find a link to a \'Next\'/\'Next Chapter\' page, '
-          'or stopped because link pointed to known non-story page (epilogue, '
-          'afterword, author\'s blog, another story, sequel, …).\n'
-          'Total time: {:.5} sec.'
+    print('Could not find a link to a \'Next\'/\'Next Chapter\' page.\n'
+          '  Serial \'' + PAGE_TITLE + '\' complete?\n'
+          '  Total time: {:.5} sec.'
           .format(time.time() - START_TIME) + '\n'  # total time
           )
 
@@ -708,13 +709,11 @@ if __name__ == '__main__':
         PAGE_TITLE = 'Glow-worm'
         FIRST_LINK = 'https://parahumans.wordpress.com/2017/10/21/glowworm-p-1/'
         PARS = 'html5lib'  # the others don't handle this html style well
-
     # 'Pact'
     elif len(sys.argv) > 1 and sys.argv[1] == 'Pact':
         PAGE_TITLE = 'Pact'
         FIRST_LINK = 'http://pactwebserial.wordpress.com/2013/12/17/bonds-1-1/'
         PARS = 'lxml'
-
     # 'SICP' (Structure and Interpretation of Computer Programs)
     elif len(sys.argv) > 1 and sys.argv[1] == 'SICP':
         PAGE_TITLE = 'Structure and Interpretation of Computer Programs'
@@ -724,20 +723,17 @@ if __name__ == '__main__':
         REL_LINK_BASE = 'https://mitpress.mit.edu/sicp/full-text/book/'
         TITLE_SEPARATE = False  # header and chapter are the same tag
         PARS = 'html5lib'  # the others don't handle this html style well
-
     # 'T5D'
     elif len(sys.argv) > 1 and sys.argv[1] == 'T5D':
         PAGE_TITLE = 'The Fifth Defiance'
         FIRST_LINK = 'https://thefifthdefiance.com/2015/11/02/introduction/'
         PARS = 'lxml'
-
     # 'Twig'
     elif len(sys.argv) > 1 and sys.argv[1] == 'Twig':
         PAGE_TITLE = 'Twig'
         FIRST_LINK = ('https://twigserial.wordpress.com/'
                       '2014/12/24/taking-root-1-1/')
         PARS = 'lxml'
-
     # 'Unsong'
     elif len(sys.argv) > 1 and sys.argv[1] == 'Unsong':
         PAGE_TITLE = 'Unsong'
@@ -754,26 +750,16 @@ if __name__ == '__main__':
             if sys.argv[2] in ('--chronological', '--chrono'):
                 GET_NOTES = 'chrono'
                 PAGES_FILE = PAGE_TITLE + '.html'
-
-    # 'Ward'
-    elif len(sys.argv) > 1 and sys.argv[1] == 'Ward':
-        PAGE_TITLE = 'Ward'
-        FIRST_LINK = 'https://www.parahumans.net/2017/09/11/daybreak-1-1/'
-        # •••••••••• might need html5lib depending on Ward's html •••••••••••
-        PARS = 'lxml'
-
     # 'Worm'
     elif len(sys.argv) > 1 and sys.argv[1] == 'Worm':
         PAGE_TITLE = 'Worm'
         FIRST_LINK = 'https://parahumans.wordpress.com/2011/06/11/1-1/'
         PARS = 'lxml'
-
     # No correct arguments for serial selection were stated
     else:
         print('\nSerial to download not or incorrectly stated.\n'
               'Usage:\nChapterChainer.py {Glowo, Pact, SICP, T5D, Twig, '
-              'Unsong [--append | --chrono[logical] | --omit], '
-              'Ward, Worm}\n'
+              'Unsong [--append | --chrono[logical] | --omit], Worm}\n'
               )
         sys.exit()
 
@@ -786,8 +772,7 @@ if __name__ == '__main__':
                     ('--omit', '--append', '--chronological', '--chrono'):
                 print('\nOptions for Notes pages incorrectly stated.\n'
                       'Usage:\nChapterChainer.py {Pact, SICP, T5D, Twig, '
-                      'Unsong [--append | --chrono[logical] | --omit], '
-                      'Ward, Worm}\n'
+                      'Unsong [--append | --chrono[logical] | --omit], Worm}\n'
                       )
                 sys.exit()
 
