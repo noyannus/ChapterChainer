@@ -13,52 +13,57 @@
 #   'Author's Notes') can optionally be skipped or appended to the story.     #
 #                                                                             #
 #                                                                             #
-#   Currently built-in serials are:                                           #
+#   Currently built-in serials                                                #
 #                                                                             #
-#   Abelson, Sussman & Sussman  'Structure and Interpretation of Computer     #
-#                               Programs', 2nd edition ('SICP')               #
-#   Alexander, Scott           'Unsong' (Author’s Notes optional, non-story   #
-#                                        announcements/greetings omitted)     #
-#   Walter                     'The Fifth Defiance' ('T5D')                   #
+#   Abelson, Sussman & Sussman                                                #
+#   'Structure and Interpretation of Computer Programs', 2nd edition ('SICP') #
+#                                                                             #
+#   Alexander, Scott                                                          #
+#   'Unsong' (Author’s Notes optional, announcements/greetings omitted)       #
+#                                                                             #
+#   Walter                                                                    #
+#   'The Fifth Defiance' ('T5D')                                              #
 #                                                                             #
 #                                                                             #
 #   Required:   Python 3, BeautifulSoup4, lxml, html5lib                      #
 #                                                                             #
-#                                                                             #
 #   Usage:                                                                    #
-#   Invoke the script with one of the titles, and one of the switches if      #
-#   applicable. Use the abbreviations where listed above.                     #
-#   All arguments are case sensitive:                                         #
+#       ChapterChainer.py Title [option] [URL]                                #
+#       ChapterChainer.py URL                                                 #
+#   Invoke the script with one of the builtin titles (SICP, T5D, Unsong),     #
+#   one of the switches if applicable (see below),                            #
+#   your start URL if you don't want to start at the serial's first page.     #
+#   Alternatively, just state the URL where you want to start downloading.    #
 #                                                                             #
-#   python3 ChapterChainer.py {SICP, T5D, Unsong}                             #
+#   All arguments are case sensitive.                                         #
 #                                                                             #
-#   Optional switches for Author's Notes and Postscript; currently only for   #
-#   'Unsong':                                                                 #
-#                                                                             #
+#   Optional switches for pages not being part of the story (e.g., Author's   #
+#   Notes, Greetings, Postscript); currently only for 'Unsong':               #
 #   [--omit | --append | --chrono[logical]]                                   #
-#                                                                             #
 #   '-omit' skips these pages, '--append' collects and puts them after the    #
 #   story, the default '--chronological' (or '--chrono') keeps them           #
 #   interspersed between chapters in order of publication.                    #
 #                                                                             #
-#   Examples:                                                                 #
+#   Example:                                                                  #
 #   'ChapterChainer.py Unsong --omit'                                         #
 #   downloads 'Unsong' without the non-story pages to the working directory.  #
 #                                                                             #
 #   Known Issues:                                                             #
 #   Pages not published at the time of this script update may not be found    #
-#   if the 'Next' link has been changed. Links from a story to epilogue,      #
-#   afterword, author's blog, next story, etc. are not followed.              #
+#   if the 'Next' link has been changed.                                      #
+#   Links from a story to epilogue, afterword, author's blog, next story, ... #
+#   are not followed.                                                         #
 #                                                                             #
 #                                                                             #
 #   Social and Legal                                                          #
 #   Please donate to the authors for their writing! Using this script can     #
 #   deny them some needful income from advertising.                           #
-#   Easy donation options are on their sites. As usually are options to       #
+#   Easy donation options are on their sites. Usually there are options to    #
 #   share, like, and comment (high added value from audience sometimes!)      #
 #   And you can vote daily on topwebfiction.com if you enjoy reading.         #
 #                                                                             #
 #       Structure and Interpretation of Computer Programs: ???                #
+#                (no vote)                                                    #
 #       The Fifth Defiance: ???                                               #
 #                http://topwebfiction.com/vote.php?for=the-fifth-defiance     #
 #       Unsong:  Patreon link on http://slatestarcodex.com/                   #
@@ -66,11 +71,10 @@
 #                                                                             #
 #                                                                             #
 #   This script must not be used to publish a serial without its author's     #
-#   permission. (This would severely curtail their chances to sell the        #
+#   permission. This would severely curtail their chances to sell the        #
 #   manuscript, and with no money to make we might lose them writing for the  #
 #   web altogether. Also, few could afford the punitive damage for a lost     #
-#   film series deal. Sorry for the moralizing.) Wildbow's works have been    #
-#   deleted from the built-in serials because he does not endorse scraping.   #
+#   film series deal. Sorry for the moralizing. Enjoy reading!               #
 #                                                                             #
 #   ......................................................................    #
 #                                                                             #
@@ -89,7 +93,6 @@ import sys
 import time
 import urllib.parse
 import urllib.request
-
 import bs4
 import html5lib  # is used, ignore code inspector's complaint
 import lxml  # is used, ignore code inspector's complaint
@@ -129,7 +132,7 @@ def find_next_link(soup):
 
     maybe_link = None
 
-    # 'T5D', 'Unsong': various link texts
+    # Various link texts in builtin serials
     if WHICH_SERIAL in ('T5D', 'Unsong'):
         if soup.find('a', {'rel': 'next'}) is not None:  # find by 'rel'='next'
             maybe_link = soup.find('a', {'rel': 'next'})['href']
@@ -538,16 +541,16 @@ if __name__ == '__main__':
                        • 'html.parser' (decent speed, lenient, Python built-in)
                        • 'html5lib' (very slow, extremely lenient, parses pages
                                   like a web browser does, creates valid HTML5)
-    
+
     2. Set other parameters in the if-branches in the script above:
      In find_next_link(), if required:
          A soup.find()     What defines a link to the next page
      In get_wanted_content_tags(), if required:
          chap_title_tag    What defines the tag holding the page headline
          chap_cont_tag     What defines the tag holding the page content
-     Add a declutter_XXXXX(), 
+     Add a declutter_XXXXX(),
          For any unwanted clutter to decompose and delete
-    
+
     3. Add argument to all appropriate '(WHICH_SERIAL [in | ==]' conditions
     """
 
@@ -555,9 +558,10 @@ if __name__ == '__main__':
     if len(sys.argv) > 1 and sys.argv[1] == 'SICP':
         PAGE_TITLE = 'Structure and Interpretation of Computer Programs'
         PAGES_FILE = 'StructInterprCompProg.html'
-        FIRST_LINK = ('https://mitpress.mit.edu/'
-                      'sicp/full-text/book/book.html')
-        REL_LINK_BASE = 'https://mitpress.mit.edu/sicp/full-text/book/'
+        FIRST_LINK = 'https://mitpress.mit.edu/sites/default/files/' \
+                     'sicp/full-text/book/book.html'
+        REL_LINK_BASE = 'https://mitpress.mit.edu/sites/default/files/' \
+                        'sicp/full-text/book/'
         TITLE_SEPARATE = False  # header and chapter are the same tag
         PARS = 'html5lib'  # the others don't handle this html style well
 
@@ -573,7 +577,7 @@ if __name__ == '__main__':
         FIRST_LINK = 'https://unsongbook.com/prologue-2/'
         PARS = 'lxml'
         GET_NOTES = 'chrono'  # Default: chronological order w/story pages
-        if len(sys.argv) == 3:
+        if len(sys.argv) > 2 and not str.startswith(sys.argv[2], 'http'):
             if sys.argv[2] == '--omit' or sys.argv[2] is None:
                 GET_NOTES = 'omit'  # None
                 PAGES_FILE = PAGE_TITLE + '-Notes_omitted.html'
@@ -582,28 +586,39 @@ if __name__ == '__main__':
                 PAGES_FILE = PAGE_TITLE + '-Notes_appended.html'
             if sys.argv[2] in ('--chronological', '--chrono'):
                 GET_NOTES = 'chrono'
-                PAGES_FILE = PAGE_TITLE + '.html'
+                PAGES_FILE = PAGE_TITLE + '-Notes_chronological.html'
+        else:
+            print('\nDefaulting to --chronological\n')
+            GET_NOTES = 'chrono'
+            PAGES_FILE = PAGE_TITLE + '-Notes_chronological.html'
 
-    # No correct arguments for serial selection were stated
+    # Any URL (no stated serial, thus none of preset decluttering)
+    # only accept http
+    elif len(sys.argv) > 1 and str.startswith(sys.argv[1], 'http'):
+        timestamp = time.strftime('%Y-%m-%d %H:%M:%S')
+        PAGE_TITLE = 'Serial'
+        PAGES_FILE = 'Serial Downloaded ' + timestamp + '.html'
+        FIRST_LINK = sys.argv[1]  # start with the given URL
+        PARS = 'lxml'
+        print('\nIt is unlikely that ChapterChainer is already configured '
+              'to download the serial from this URL.\n'
+              'Please adapt the source code if the result of this run '
+              'is not satisfying.\n\n')
+
+    # No valid arguments
     else:
-        print('\nSerial to download not or incorrectly stated.\n'
+        print('\nSerial or URL incorrectly stated.\n'
               'Usage:\nChapterChainer.py {SICP, T5D, '
-              'Unsong [--append | --chrono[logical] | --omit]}\n'
+              'Unsong [--append | --chrono[logical] | --omit], URL}\n'
               )
         sys.exit()
 
-    # Check for correct arguments for Unsong options
-    if sys.argv[1] == 'Unsong':
-        if len(sys.argv) == 2:
-            print('\nDefaulting to --chronological\n')
-        else:
-            if sys.argv[2] not in \
-                    ('--omit', '--append', '--chronological', '--chrono'):
-                print('\nOptions for Notes pages incorrectly stated.\n'
-                      'Usage:\nChapterChainer.py {SICP, T5D, '
-                      'Unsong [--append | --chrono[logical] | --omit]}\n'
-                      )
-                sys.exit()
+    # Stated serial with start-URL ('serial URL' or 'serial option URL')
+    # overwrite the first page value with URL
+    if len(sys.argv) > 2 and str.startswith(sys.argv[2], 'http'):
+        FIRST_LINK = sys.argv[2]
+    if len(sys.argv) > 3 and str.startswith(sys.argv[3], 'http'):
+        FIRST_LINK = sys.argv[3]
 
     # Constants not set before, including some defaults
     WHICH_SERIAL = sys.argv[1]
@@ -614,8 +629,10 @@ if __name__ == '__main__':
     if 'WAIT_BETWEEN_REQUESTS' not in locals():
         WAIT_BETWEEN_REQUESTS = 0
     if 'TITLE_SEPARATE' not in locals():
-        TITLE_SEPARATE = True
+        TITLE_SEPARATE = False
     NOTES_FILE = PAGE_TITLE + '_temp.html'
     START_TIME = time.time()  # For total time
 
-    start_end_serial_download()  # Start actual processing
+    # Start actual processing
+    start_end_serial_download()
+

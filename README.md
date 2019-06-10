@@ -12,7 +12,7 @@ This script downloads serial web pages. It follows the *Next* or *Next Chapter* 
 
 ChapterChainer is heavily commented and uses descriptive variable names to make adding new serials fairly easy. Non-story pages (such as 'Author's Notes') can optionally be skipped or appended to the story.
 
-Currently built-in serials are:
+### Currently built-in serials
 
 * Abelson, Sussman & Sussman: [*Structure and Interpretation of Computer 
 Programs*](https://mitpress.mit.edu/sicp/full-text/book/book.html), 2nd edition ('SICP')
@@ -26,17 +26,25 @@ Python 3,
 
 ### Usage
 
-Invoke the script with one of the titles, and one of the switches if applicable. Use the abbreviations where listed above. All arguments are *case sensitive*:
+`ChapterChainer.py Title [option] [URL]`
 
-`ChapterChainer.py {SICP, T5D, Unsong}`
+`ChapterChainer.py URL`
 
-Optional switches for Author's Notes and Postscript (currently for *'Unsong' only*): 
+Invoke the script with one of the builtin titles (`SICP`, `T5D`, `Unsong`), 
+one of the switches if applicable (see below), your start URL if you don't want to start at the serial's first page. 
 
-  `[--omit | --append | --chrono[logical]]`
- 
- `--omit` skips these pages, `--append` collects and puts them after the story, the default `--chronological` (or `--chrono`) keeps them interspersed between chapters in order of publication.
+Alternatively, just state the URL where you want to start downloading.
 
-Examples:
+All arguments are case sensitive. 
+
+Optional switches for pages not being part of the story (e.g., Author's 
+Notes, Greetings, Postscript); currently only for 'Unsong':
+
+`[--omit | --append | --chrono[logical]]`
+
+`-omit` skips these pages, `--append` collects and puts them after the story, the default `--chronological` (or `--chrono`) keeps them interspersed between chapters in order of publication.
+
+##### Example:
 
 `ChapterChainer.py Unsong --omit` downloads Unsong without the non-story pages to the working directory.
 
@@ -50,15 +58,15 @@ _Please donate to the authors for their writing!_ Using this script can deny the
 And you can _vote daily on topwebfiction.com_ if you enjoy reading.
 
 * Structure and Interpretation of Computer Programs:
-  * ???
+ * ???
 * The Fifth Defiance:
-  * ???
-  * http://topwebfiction.com/vote.php?for=the-fifth-defiance
+ * ???
+ * http://topwebfiction.com/vote.php?for=the-fifth-defiance
 * Unsong:
-  * http://slatestarcodex.com/
-  * http://topwebfiction.com/vote.php?for=unsong
+ * http://slatestarcodex.com/
+ * http://topwebfiction.com/vote.php?for=unsong
 
-_This script must not be used to publish or circulate a serial without its author's permission._ (This would severely curtail their chances to sell the manuscript, and with no money to make they may give up writing for the web altogether. Also, few could afford the punitive damage for a lost film series deal. Sorry for the moralizing.) Wildbow's works have been deleted from the built-in serials because [he does not endorse scraping](https://www.parahumans.net/f-a-q/).
+**This script must not be used to publish or circulate a serial without its author's permission.** This would severely curtail their chances to sell the manuscript, and with no money to make they may give up writing for the web altogether. Also, few could afford the punitive damage for a lost film series deal. Sorry for the moralizing. Wildbow's works have been deleted from the built-in serials because [he does not endorse scraping](https://www.parahumans.net/f-a-q/).
 
 ### Credits
 
