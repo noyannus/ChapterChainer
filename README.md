@@ -5,7 +5,7 @@
 [(kingjamesprogramming.tumblr.com)](http://kingjamesprogramming.tumblr.com/)
 
 -----
-
+ 
 # ChapterChainer
 
 This script downloads serial web pages. It follows the *Next* or *Next Chapter* link of each page (no 'Table of Contents' page is required), does some formatting and cleanup of the retrieved html, and outputs all chapters to one large HTML file. 
