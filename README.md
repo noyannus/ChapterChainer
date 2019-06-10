@@ -58,13 +58,13 @@ _Please donate to the authors for their writing!_ Using this script can deny the
 And you can _vote daily on topwebfiction.com_ if you enjoy reading.
 
 * Structure and Interpretation of Computer Programs:
- * ???
+   * ???
 * The Fifth Defiance:
- * ???
- * http://topwebfiction.com/vote.php?for=the-fifth-defiance
+   * ???
+   * http://topwebfiction.com/vote.php?for=the-fifth-defiance
 * Unsong:
- * http://slatestarcodex.com/
- * http://topwebfiction.com/vote.php?for=unsong
+   * http://slatestarcodex.com/
+   * http://topwebfiction.com/vote.php?for=unsong
 
 **This script must not be used to publish or circulate a serial without its author's permission.** This would severely curtail their chances to sell the manuscript, and with no money to make they may give up writing for the web altogether. Also, few could afford the punitive damage for a lost film series deal. Sorry for the moralizing. Wildbow's works have been deleted from the built-in serials because [he does not endorse scraping](https://www.parahumans.net/f-a-q/).
 
